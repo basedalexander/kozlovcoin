@@ -1,5 +1,5 @@
-const Blockchain = require('./blockchain');
-const nodeConfig = require('../config/node-config.json');
+import { Blockchain } from './blockchain';
+import { nodeConfig } from '../../config/node-config.json';
 
 const blockchain = new Blockchain();
 

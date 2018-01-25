@@ -1,7 +1,7 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-class Block {
-    constructor(index, timeStamp, data, previousBlockHash) {
+export class Block {
+    constructor (index, timeStamp, data, previousBlockHash) {
         this.index = index;
         this.timestamp = timeStamp;
         this.data = data;

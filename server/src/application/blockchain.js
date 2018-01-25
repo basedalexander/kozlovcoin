@@ -1,7 +1,7 @@
-const Block = require('./block');
+import { Block } from './block';
 
-class Blockchain {
-    constructor() {
+export class Blockchain {
+    constructor () {
         this.init();
     }
 

@@ -1,9 +1,13 @@
-const express = require('express');
+import express from 'express';
+import bodyParser from 'body-parser';
 
-class Server {
-    constructor(config, node) {
+export class Server {
+    constructor(config, node, logger) {
         this.config = config;
         this.node = node;
+        this.logger = logger;
+
+        this.init();
     }
 
     init() {
@@ -18,10 +22,11 @@ class Server {
     }
 
     setupRouting(app) {
-        app.get('/', (req, res) => res.send('Hello World!'));
+        app.get('/', (req, res) => res.send('Hey'));
 
         app.post('/transaction', (req, res) => {
-            node.addTransaction(req.body);
+            this.node.addTransaction(req.body);
+            res.end();
         });
 
         app.get('/mine', (req, res) => {
@@ -38,7 +43,7 @@ class Server {
 
     start() {
         this.app.listen(this.config.port, () => {
-            console.log(`Server is listening on port ${this.config.port}`)
+            this.logger.log(`Server is listening on port ${this.config.port}`)
         });
     }
 }

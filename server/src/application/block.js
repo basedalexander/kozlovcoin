@@ -6,17 +6,17 @@ export class Block {
         this.timestamp = timeStamp;
         this.data = data;
         this.previousBlockHash = previousBlockHash;
-        this.hash = this.createHash();
-    }
-
-    createHash() {
-        const hash = crypto.createHash('sha256');
-        return hash
-            .update(`${this.index}${this.timestamp}${this.data}${this.previousBlockHash}`)
-            .digest('hex');
+        this.hash = this._createHash();
     }
 
     getProof() {
         return this.data.proof;
+    }
+
+    _createHash() {
+        const hash = crypto.createHash('sha256');
+        return hash
+            .update(`${this.index}${this.timestamp}${this.data}${this.previousBlockHash}`)
+            .digest('hex');
     }
 }

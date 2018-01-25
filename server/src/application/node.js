@@ -1,42 +1,39 @@
 import { Blockchain } from './blockchain';
 import { nodeConfig } from '../../config/node-config.json';
 
-const blockchain = new Blockchain();
-
-class Node {
+export class Node {
     constructor(blockchain, config) {
-        this.blockchain = blockchain;
-        this.config = config;
-
-        this.transactions = [];
+        this._blockchain = blockchain;
+        this._config = config;
+        this._transactions = [];
     }
 
     addTransaction(transaction) {
-        this.transactions.push(transaction);
+        this._transactions.push(transaction);
     }
 
     clearTransactions() {
-        this.transactions = [];
+        this._transactions = [];
     }
 
     mine() {
-        const lastBlock = this.blockchain.getLastBlock();
+        const lastBlock = this._blockchain.getLastBlock();
         const lastProof = lastBlock.getProof();
         const proof = this.createProofOfWork(lastProof);
 
         this.addTransaction({
             from: 'network',
-            to: this.config.minerAddress,
+            to: this._config.minerAddress,
             amount: 1
         });
 
         const newBlockData = {
             proof: proof,
-            transactions: this.transactions
+            transactions: this._transactions
         };
 
-        const nextBlock = this.blockchain.createNextBlock(lastBlock, newBlockData);
-        this.blockchain.addBlock(nextBlock);
+        const nextBlock = this._blockchain.createNextBlock(lastBlock, newBlockData);
+        this._blockchain.addBlock(nextBlock);
 
         return nextBlock;
     }
@@ -55,4 +52,4 @@ class Node {
     }
 }
 
-export const node = new Node(blockchain, nodeConfig);
+export const node = new Node(new Blockchain(), nodeConfig);

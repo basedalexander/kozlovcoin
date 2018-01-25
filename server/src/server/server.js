@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 
 export class Server {
     constructor(config, node, logger) {
-        this.config = config;
+        this._config = config;
         this.node = node;
         this.logger = logger;
 
@@ -42,8 +42,8 @@ export class Server {
     }
 
     start() {
-        this.app.listen(this.config.port, () => {
-            this.logger.log(`Server is listening on port ${this.config.port}`)
+        this.app.listen(this._config.port, () => {
+            this.logger.log(`Server is listening on port ${this._config.port}`)
         });
     }
 }

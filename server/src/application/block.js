@@ -3,7 +3,7 @@ import crypto from 'crypto';
 export class Block {
     constructor (index, timeStamp, data, previousBlockHash) {
         this.index = index;
-        this.timestamp = timeStamp;
+        this.timeStamp = timeStamp;
         this.data = data;
         this.previousBlockHash = previousBlockHash;
         this.hash = this._createHash();
@@ -15,8 +15,10 @@ export class Block {
 
     _createHash() {
         const hash = crypto.createHash('sha256');
+        const data = JSON.stringify(this.data);
+
         return hash
-            .update(`${this.index}${this.timestamp}${this.data}${this.previousBlockHash}`)
+            .update(`${this.index}${this.timeStamp}${data}${this.previousBlockHash}`)
             .digest('hex');
     }
 }

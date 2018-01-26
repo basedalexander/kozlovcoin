@@ -1,11 +1,24 @@
 import { Blockchain } from './blockchain';
-import { nodeConfig } from '../../config/node-config.json';
+import nodeConfig from '../../config/node-config.json';
 
 export class Node {
     constructor(blockchain, config) {
         this._blockchain = blockchain;
         this._config = config;
         this._transactions = [];
+    }
+
+    getBlockchain() {
+        const blocks = this._blockchain.getBlocks();
+
+        return blocks.map((block) => {
+            return {
+                index: block.index,
+                timeStamp: block.timeStamp,
+                data: block.data,
+                hash: block.hash
+            };
+        });
     }
 
     addTransaction(transaction) {
@@ -34,6 +47,8 @@ export class Node {
 
         const nextBlock = this._blockchain.createNextBlock(lastBlock, newBlockData);
         this._blockchain.addBlock(nextBlock);
+
+        this.clearTransactions();
 
         return nextBlock;
     }

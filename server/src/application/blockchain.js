@@ -5,13 +5,17 @@ export class Blockchain {
         this._init();
     }
 
+    getBlocks() {
+        return this._list;
+    }
+
     addBlock(block) {
         this._list.push(block);
     }
 
     createNextBlock(prevBlock, data) {
         const index = (prevBlock.index + 1);
-        const timeStamp = Date.now();
+        const timeStamp = new Date();
 
         return new Block(index, timeStamp, data, prevBlock.hash);
     }
@@ -31,6 +35,6 @@ export class Blockchain {
             transactions: []
         };
 
-        return new Block(0, Date.now(), genesysData, '0');
+        return new Block(0, new Date(), genesysData, '0');
     }
 }

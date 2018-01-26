@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
 export class Block {
-    constructor (index, timeStamp, data, previousBlockHash) {
+    constructor (index, date, data, previousBlockHash) {
         this.index = index;
-        this.timeStamp = timeStamp;
+        this.timeStamp = date.toISOString();
         this.data = data;
         this.previousBlockHash = previousBlockHash;
         this.hash = this._createHash();

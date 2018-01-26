@@ -66,7 +66,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Empty response"
+            "description": "New mined block info",
+            "schema": {
+              "$ref": "#/definitions/minedBlock"
+            }
           }
         }
       }
@@ -161,6 +164,46 @@
           "type": "integer",
           "format": "int64",
           "example": 1
+        }
+      }
+    },
+    "minedBlock": {
+      "properties": {
+        "index": {
+          "required": true,
+          "type": "integer",
+          "format": "int64",
+          "example": 1
+        },
+        "timeStamp": {
+          "required": true,
+          "type": "string",
+          "format": "date",
+          "example": "2018-01-26T13:54:07.243Z"
+        },
+        "data": {
+          "required": true,
+          "type": "object",
+          "properties": {
+            "proof": {
+              "required": true,
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            },
+            "transactions": {
+              "required": true,
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/transaction"
+              }
+            }
+          }
+        },
+        "hash": {
+          "required": true,
+          "type": "string",
+          "example": "sfdasdf23kj2h940hdf9saf9asdf9sadf"
         }
       }
     },

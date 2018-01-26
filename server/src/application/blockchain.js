@@ -15,9 +15,9 @@ export class Blockchain {
 
     createNextBlock(prevBlock, data) {
         const index = (prevBlock.index + 1);
-        const timeStamp = new Date();
+        const date = new Date();
 
-        return new Block(index, timeStamp, data, prevBlock.hash);
+        return new Block(index, date, data, prevBlock.hash);
     }
 
     getLastBlock() {

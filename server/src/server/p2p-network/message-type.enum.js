@@ -1,0 +1,6 @@
+export const EMessageType = {
+    QUERY_LATEST_BLOCK: 0,
+    QUERY_ALL_BLOCKS: 1,
+    RESPONSE_LATEST_BLOCK: 2,
+    RESPONSE_ALL_BLOCKS: 3
+};

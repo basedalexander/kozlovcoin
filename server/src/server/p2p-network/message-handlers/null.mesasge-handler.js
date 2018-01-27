@@ -1,9 +1,14 @@
+import { Injectable, Inject } from 'container-ioc';
+
+import {TLogger} from "../../../system/logger/logger";
+
+@Injectable([TLogger])
 export class NullMessageHandler {
-    constructor(context) {
-        this._context = context;
+    constructor(@Inject(TLogger) logger) {
+        this._logger = logger;
     }
 
     execute(ws, message) {
-        this._context.logger.warn(`Unhandled incoming message: ${message}`);
+        this._logger.warn(`Unhandled incoming message: ${message}`);
     }
 }

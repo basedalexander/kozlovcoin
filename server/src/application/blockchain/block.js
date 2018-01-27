@@ -6,19 +6,15 @@ export class Block {
         this.timeStamp = date.toISOString();
         this.data = data;
         this.previousBlockHash = previousBlockHash;
-        this.hash = this._createHash();
+        this.hash = Block.createHash(this);
     }
 
-    getProof() {
-        return this.data.proof;
-    }
-
-    _createHash() {
+    static createHash(block) {
         const hash = crypto.createHash('sha256');
-        const data = JSON.stringify(this.data);
+        const data = JSON.stringify(block.data);
 
         return hash
-            .update(`${this.index}${this.timeStamp}${data}${this.previousBlockHash}`)
+            .update(`${block.index}${block.timeStamp}${data}${block.previousBlockHash}`)
             .digest('hex');
     }
 }

@@ -1,3 +1,1 @@
-import { ConsoleLogger } from "./console-logger";
-
-export const logger = new ConsoleLogger();
+export const TLogger = Symbol('Logger');

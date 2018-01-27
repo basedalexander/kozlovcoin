@@ -1,9 +1,14 @@
 import express from 'express';
 import swagger from 'swagger-node-express';
 import path from 'path';
+import { Injectable, Inject } from 'container-ioc';
+import {TLogger} from "../system/logger/logger";
 
+@Injectable([TLogger])
 export class Swagger {
-    constructor(logger) {
+    constructor(
+        @Inject(TLogger) logger
+    ) {
         this.logger = logger;
     }
 

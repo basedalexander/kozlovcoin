@@ -1,20 +1,46 @@
 import WebSocket from 'ws';
+import { Injectable, Inject } from 'container-ioc';
 
+import { EMessageType } from "./message-type.enum";
 import './message-handlers/message-handlers';
+import { TLogger } from "../../system/logger/logger";
+import { Node } from '../../application/node';
+import { MessageHandlerFactory } from "./message-handler-factory";
 
+@Injectable([Node, TLogger, MessageHandlerFactory])
 export class P2PNetwork {
-    constructor(node, logger, messageHandlerFactory) {
+    constructor(
+        @Inject(Node) node,
+        @Inject(TLogger) logger,
+        @Inject(MessageHandlerFactory) messageHandlerFactory
+    ) {
         this._node = node;
         this._logger = logger;
         this._messageHandlerFactory = messageHandlerFactory;
 
         this._initializePeers();
+
+        this._node.blockMined.subscribe((block) => {
+            this.broadcast({
+                type: EMessageType.NEW_BLOCK_MINED,
+                data: block
+            });
+        });
     }
 
     start() {
         this._server = new WebSocket.Server({port: 6001}); // todo read from config
         this._server.on('connection', ws => this._initConnection(ws));
         this._logger.log('listening websocket p2p port on: ' + 6001);
+    }
+
+    broadcast(message) {
+        this._sockets.forEach(socket => this.sendMessage(socket, message));
+    }
+
+    sendMessage(ws, message) {
+        const serializedMessage = JSON.stringify(message);
+        ws.send(serializedMessage);
     }
 
     _initializePeers() {
@@ -32,6 +58,11 @@ export class P2PNetwork {
             this._sockets.push(ws);
             this._setupMessageHandler(ws);
             this._setupErrorHandler(ws);
+
+            this.sendMessage(ws, {
+                type: EMessageType.QUERY_LATEST_BLOCK, // todo encapsulate message creation
+                data: null
+            })
         });
 
         ws.on('error', () => {
@@ -41,6 +72,7 @@ export class P2PNetwork {
 
     _createContext() {
         return {
+            p2pNetwork: this,
             initialPeers: this._initialPeers,
             sockets: this._sockets,
             node: this._node,

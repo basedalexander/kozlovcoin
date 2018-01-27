@@ -1,19 +1,26 @@
 import {NullMessageHandler} from "./message-handlers/null.mesasge-handler";
+import { Injectable, Inject, Container } from 'container-ioc';
 
+@Injectable([Container])
 export class MessageHandlerFactory {
+    constructor(
+        @Inject(Container) container
+    ) {
+        this._container = container;
+    }
     static registry = new Map();
 
     static register(type, handlerConstructor) {
         MessageHandlerFactory.registry.set(type, handlerConstructor);
     }
 
-    static create(type, context) {
-        const handlerConstructor = MessageHandlerFactory.registry.get(type);
+    create(type) {
+        let handlerConstructor = MessageHandlerFactory.registry.get(type);
 
-        if (handlerConstructor) {
-            return new handlerConstructor(context);
-        } else {
-            return new NullMessageHandler(context);
+        if (!handlerConstructor) {
+           handlerConstructor = NullMessageHandler;
         }
+
+        return this._container.resolve(handlerConstructor);
     }
 }

@@ -1,14 +1,33 @@
+import { Injectable, Inject } from 'container-ioc';
+
 import { Blockchain } from './blockchain/blockchain';
 import nodeConfig from '../../config/node-config.json';
+import { Block } from "./blockchain/block";
+import { EventEmitter } from '../lib/event-emitter';
+import { NodeConfiguration } from "./node-configuration";
 
+@Injectable([Blockchain])
 export class Node {
-    constructor(blockchain, config) {
-        this._blockchain = blockchain;
+    static TRANSACTIONS_PER_BLOCK_LIMIT = 2;
+
+    constructor(
+        @Inject(Blockchain) blockchain,
+        @Inject(NodeConfiguration) config
+    ) {
         this._config = config;
+        this._blockchain = blockchain;
+
         this._transactions = [];
+
+        this.blockMined = new EventEmitter();
+        this.newTransaction = new EventEmitter();
     }
 
-    getBlockchain() {
+    init() {
+        this.blockchain.addBlock(this._createGenesysBlock());
+    }
+
+    getBlocks() {
         const blocks = this._blockchain.getBlocks();
 
         return blocks.map((block) => {
@@ -16,13 +35,34 @@ export class Node {
                 index: block.index,
                 timeStamp: block.timeStamp,
                 data: block.data,
-                hash: block.hash
+                hash: block.hash,
+                previousBlockHash: block.previousBlockHash
             };
         });
     }
 
+    validateBlock(newBlock, previousBlock) {
+        if (newBlock.index !== (previousBlock.index + 1)) {
+            return false;
+        }
+
+        if (newBlock.previousBlockHash !== previousBlock.hash) {
+            return false;
+        }
+
+        if (Block.createHash(newBlock) !== newBlock.hash) {
+            return false;
+        }
+
+        return true;
+    }
+
     addTransaction(transaction) {
         this._transactions.push(transaction);
+
+        if (this._transactions.length === Node.TRANSACTIONS_PER_BLOCK_LIMIT) {
+            this.mine();
+        }
     }
 
     clearTransactions() {
@@ -31,8 +71,7 @@ export class Node {
 
     mine() {
         const lastBlock = this._blockchain.getLastBlock();
-        const lastProof = lastBlock.getProof();
-        const proof = this.createProofOfWork(lastProof);
+        const lastProof = lastBlock.data.proof;
 
         this.addTransaction({
             from: 'network',
@@ -40,20 +79,40 @@ export class Node {
             amount: 1
         });
 
+        const proof = this._createProofOfWork(lastProof);
+
         const newBlockData = {
             proof: proof,
             transactions: this._transactions
         };
 
-        const nextBlock = this._blockchain.createNextBlock(lastBlock, newBlockData);
-        this._blockchain.addBlock(nextBlock);
+        const newBlock = this._createNextBlock(lastBlock, newBlockData);
+        this._blockchain.addBlock(newBlock);
 
         this.clearTransactions();
 
-        return nextBlock;
+        this.blockMined.emit(newBlock);
+
+        return newBlock;
     }
 
-    createProofOfWork(lastProof) {
+    _createGenesysBlock() {
+        const genesysData = {
+            proof: 0,
+            transactions: []
+        };
+
+        return new Block(0, '0', genesysData, '0');
+    }
+
+    _createNextBlock(prevBlock, data) {
+        const index = (prevBlock.index + 1);
+        const date = new Date();
+
+        return new Block(index, date, data, prevBlock.hash);
+    }
+
+    _createProofOfWork(lastProof) {
         let incrementor = lastProof + 1;
 
         while(

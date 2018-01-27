@@ -1,40 +1,20 @@
-import { Block } from './block';
+import { Injectable } from 'container-ioc';
 
+@Injectable()
 export class Blockchain {
     constructor () {
-        this._init();
+        this._blocks = [];
     }
 
     getBlocks() {
-        return this._list;
+        return this._blocks;
     }
 
     addBlock(block) {
-        this._list.push(block);
-    }
-
-    createNextBlock(prevBlock, data) {
-        const index = (prevBlock.index + 1);
-        const date = new Date();
-
-        return new Block(index, date, data, prevBlock.hash);
+        this._blocks.push(block);
     }
 
     getLastBlock() {
-        return this._list[this._list.length - 1];
-    }
-
-    _init() {
-        this._list = [];
-        this._list.push(this._createGenesysBlock());
-    }
-
-    _createGenesysBlock() {
-        const genesysData = {
-            proof: 0,
-            transactions: []
-        };
-
-        return new Block(0, new Date(), genesysData, '0');
+        return this._blocks[this._blocks.length - 1];
     }
 }

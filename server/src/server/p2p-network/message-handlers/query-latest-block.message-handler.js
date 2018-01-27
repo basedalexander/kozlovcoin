@@ -1,22 +1,30 @@
+import { Injectable, Inject } from 'container-ioc';
+
 import { MessageHandler } from "../message-handler.decorator";
 import { EMessageType } from "../message-type.enum";
+import { Node } from '../../../application/node';
+import {P2PNetwork} from "../p2p-network";
 
+
+@Injectable([Node, P2PNetwork])
 @MessageHandler(EMessageType.QUERY_LATEST_BLOCK)
 export class QueryLatestBlockMessageHandler {
-    constructor(context) {
-        this._context = context;
+    constructor(
+        @Inject(Node) node,
+        @Inject(P2PNetwork) p2p
+    ) {
+        this._node = node;
+        this._p2p = p2p;
     }
 
     execute(ws) {
-        const latestBlock = this._context.node.getLatestBlock();
+        const latestBlock = this._node.getLatestBlock();
 
-        const response = {
+        const message = {
             type: EMessageType.RESPONSE_LATEST_BLOCK,
-            data: JSON.stringify(latestBlock)
+            data: latestBlock
         };
 
-        const serializedResponse = JSON.stringify(response);
-
-        ws.send(serializedResponse);
+        this._p2p.sendMessage(ws, message);
     }
 }

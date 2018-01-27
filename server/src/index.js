@@ -1,15 +1,12 @@
 import { Server } from './server/server';
-import serverConfig from '../config/server-config.json';
-import { node } from './application/node';
-import { logger } from './system//logger/logger';
 import { P2PNetwork } from "./server/p2p-network/p2p-network";
-import { MessageHandlerFactory } from "./server/p2p-network/message-handler-factory";
+import {setupContainer} from "./bootstrap/setup-container";
 
-// TODO integrate IoC container
+const container = setupContainer();
 
-export const p2pNetwork = new P2PNetwork(node, logger, MessageHandlerFactory);
+export const p2pNetwork = container.resolve(P2PNetwork);
 
 p2pNetwork.start();
 
-export const server = new Server(serverConfig, node, logger);
+export const server = container.resolve(Server);
 server.start();

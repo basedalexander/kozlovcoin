@@ -1,3 +1,6 @@
+import { Injectable } from 'container-ioc';
+
+@Injectable()
 export class ConsoleLogger {
     log(message) {
         this._log('log', message);

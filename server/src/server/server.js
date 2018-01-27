@@ -1,9 +1,19 @@
 import express from 'express';
+import { Injectable, Inject } from 'container-ioc';
 import bodyParser from 'body-parser';
-import { Swagger } from './swagger';
 
+import { Swagger } from './swagger';
+import {ServerConfiguration} from "./server-configuration";
+import { TLogger } from "../system/logger/logger";
+import { Node } from '../application/node';
+
+@Injectable([ServerConfiguration, Node, TLogger])
 export class Server {
-    constructor(config, node, logger) {
+    constructor(
+        @Inject(ServerConfiguration) config,
+        @Inject(Node) node,
+        @Inject(TLogger) logger
+    ) {
         this._config = config;
         this.node = node;
         this.logger = logger;
@@ -11,7 +21,6 @@ export class Server {
 
         this._init();
     }
-
 
     start() {
         this.app.listen(this._config.port, () => {
@@ -55,7 +64,7 @@ export class Server {
         });
 
         app.get('/blocks', (req, res) => {
-            const chain = this.node.getBlockchain();
+            const chain = this.node.getBlocks();
             res.json(chain);
         });
     }

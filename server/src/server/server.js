@@ -30,24 +30,21 @@ export class Server {
         const argv = require('minimist')(process.argv.slice(2));
 
         const subPath = express();
-        app.use('/v1', subPath);
         const swgr = swagger.createNew(subPath);
-
         const uiDirPath = path.join(__dirname, '../../swagger-ui');
+        subPath.use(express.static(uiDirPath));
 
-        app.use(express.static(uiDirPath));
-
-        swgr.setApiInfo({
-            title: "example API",
-            description: "API to do something, manage something...",
-            termsOfServiceUrl: "",
-            contact: "yourname@something.com",
-            license: "",
-            licenseUrl: ""
+        subPath.get('/', function (req, res) {
+            res.sendFile(uiDirPath + '/index.html');
         });
 
-        app.get('/', function (req, res) {
-            res.sendFile(uiDirPath + '/index.html');
+        swgr.setApiInfo({
+            title: "Blockchain API",
+            description: "API for Scroogecoin",
+            termsOfServiceUrl: "",
+            contact: "itrefak@gmail.com",
+            license: "",
+            licenseUrl: ""
         });
 
         // Set api-doc path
@@ -75,8 +72,9 @@ export class Server {
         const applicationUrl = 'http://' + domain + ':' + port;
         this.logger.log('snapJob API running on ' + applicationUrl);
 
-
         swgr.configure(applicationUrl, '1.0.0');
+
+        app.use('/api-docs', subPath);
     }
 
     setupRouting(app) {
@@ -108,5 +106,9 @@ export class Server {
         this.app.listen(this._config.port, () => {
             this.logger.log(`Server is listening on port ${this._config.port}`)
         });
+    }
+
+    getExpress() {
+        return this.app;
     }
 }

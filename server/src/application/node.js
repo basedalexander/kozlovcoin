@@ -1,4 +1,4 @@
-import { Blockchain } from './blockchain';
+import { Blockchain } from './blockchain/blockchain';
 import nodeConfig from '../../config/node-config.json';
 
 export class Node {

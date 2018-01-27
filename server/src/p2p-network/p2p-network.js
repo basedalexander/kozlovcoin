@@ -43,6 +43,10 @@ export class P2PNetwork {
         ws.send(serializedMessage);
     }
 
+    getPeers() {
+        return this._sockets.map(socket => socket.url);
+    }
+
     _initializePeers() {
         this._initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : []; // todo read from config
         this._sockets = [];
@@ -86,7 +90,7 @@ export class P2PNetwork {
 
             const message = JSON.parse(data);
 
-            const handler = this._messageHandlerFactory.create(message.type, this._createContext());
+            const handler = this._messageHandlerFactory.create(message.type);
             handler.execute(ws, message);
         });
     }

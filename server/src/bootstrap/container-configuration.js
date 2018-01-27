@@ -8,7 +8,8 @@ import {NodeConfiguration} from "../application/node-configuration";
 import {ConsoleLogger} from "../system/logger/console-logger";
 import {TLogger} from "../system/logger/logger";
 import {MessageHandlerFactory} from "../p2p-network/message-handler-factory";
-import {messageHandlers} from "../p2p-network/message-handlers/message-handlers";
+import { messageHandlers } from "../p2p-network/message-handlers/message-handlers";
+import { requestLoggerProvider } from "../system/logger/request-logger";
 
 export const containerConfiguration = [
     P2PNetwork,
@@ -23,5 +24,6 @@ export const containerConfiguration = [
     NodeConfiguration,
     Blockchain,
 
-    { token: TLogger, useClass: ConsoleLogger }
+    { token: TLogger, useClass: ConsoleLogger },
+    requestLoggerProvider
 ];

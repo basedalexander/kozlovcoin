@@ -1,5 +1,5 @@
 import { Server } from './server/server';
-import { P2PNetwork } from "./server/p2p-network/p2p-network";
+import { P2PNetwork } from "./p2p-network/p2p-network";
 import {setupContainer} from "./bootstrap/setup-container";
 
 const container = setupContainer();

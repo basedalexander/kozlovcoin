@@ -1,6 +1,6 @@
 import { Injectable, Inject } from 'container-ioc';
 
-import {TLogger} from "../../../system/logger/logger";
+import {TLogger} from "../../system/logger/logger";
 
 @Injectable([TLogger])
 export class NullMessageHandler {

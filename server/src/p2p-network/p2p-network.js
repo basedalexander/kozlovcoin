@@ -3,8 +3,8 @@ import { Injectable, Inject } from 'container-ioc';
 
 import { EMessageType } from "./message-type.enum";
 import './message-handlers/message-handlers';
-import { TLogger } from "../../system/logger/logger";
-import { Node } from '../../application/node';
+import { TLogger } from "../system/logger/logger";
+import { Node } from '../application/node';
 import { MessageHandlerFactory } from "./message-handler-factory";
 
 @Injectable([Node, TLogger, MessageHandlerFactory])

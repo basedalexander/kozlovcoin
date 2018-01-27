@@ -2,12 +2,13 @@ import { Injectable, Inject } from 'container-ioc';
 
 import { MessageHandler } from "../message-handler.decorator";
 import { EMessageType } from "../message-type.enum";
-import { P2PNetwork } from "../p2p-network";
-import { Node } from '../../../application/node';
+import { Node } from '../../application/node';
+import {P2PNetwork} from "../p2p-network";
+
 
 @Injectable([Node, P2PNetwork])
-@MessageHandler(EMessageType.QUERY_ALL_BLOCKS)
-export class QueryAllBlocksMessageHandler {
+@MessageHandler(EMessageType.QUERY_LATEST_BLOCK)
+export class QueryLatestBlockMessageHandler {
     constructor(
         @Inject(Node) node,
         @Inject(P2PNetwork) p2p
@@ -17,11 +18,11 @@ export class QueryAllBlocksMessageHandler {
     }
 
     execute(ws) {
-        const blocks = this._node.getAllBlocks();
+        const latestBlock = this._node.getLatestBlock();
 
         const message = {
-            type: EMessageType.RESPONSE_ALL_BLOCKS,
-            data: JSON.stringify(blocks)
+            type: EMessageType.RESPONSE_LATEST_BLOCK,
+            data: latestBlock
         };
 
         this._p2p.sendMessage(ws, message);

@@ -2,9 +2,9 @@ import { Injectable, Inject } from 'container-ioc';
 
 import { MessageHandler } from "../message-handler.decorator";
 import { EMessageType } from "../message-type.enum";
-import { Node } from '../../../application/node';
+import { Node } from '../../application/node';
 import {P2PNetwork} from "../p2p-network";
-import {TLogger} from "../../../system/logger/logger";
+import {TLogger} from "../../system/logger/logger";
 
 @Injectable([Node, P2PNetwork, TLogger])
 @MessageHandler(EMessageType.RESPONSE_LATEST_BLOCK)

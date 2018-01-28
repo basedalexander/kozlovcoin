@@ -3,7 +3,6 @@ import { Injectable, Inject } from 'container-ioc';
 import { MessageHandler } from "../message-handler.decorator";
 import { EMessageType } from "../message-type.enum";
 import { P2PNetwork } from "../p2p-network";
-import { Node } from '../../application/node';
 import {Blockchain} from "../../application/blockchain/blockchain";
 
 @Injectable([Blockchain, P2PNetwork])

@@ -1,20 +1,12 @@
-import crypto from 'crypto';
 
 export class Block {
-    constructor (index, date, data, previousBlockHash) {
+    constructor (index, timeStamp, data, previousBlockHash, hash, difficulty, nonce) {
         this.index = index;
-        this.timeStamp = (typeof date === 'string') ? date: date.toISOString();
+        this.timeStamp = timeStamp;
         this.data = data;
         this.previousBlockHash = previousBlockHash;
-        this.hash = Block.createHash(this);
-    }
-
-    static createHash(block) {
-        const hash = crypto.createHash('sha256');
-        const data = JSON.stringify(block.data);
-
-        return hash
-            .update(`${block.index}${block.timeStamp}${data}${block.previousBlockHash}`)
-            .digest('hex');
+        this.hash = hash;
+        this.difficulty = difficulty;
+        this.nonce = nonce;
     }
 }

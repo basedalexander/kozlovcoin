@@ -1,20 +1,19 @@
 import { Injectable, Inject } from 'container-ioc';
 
 import { Blockchain } from './blockchain/blockchain';
-import nodeConfig from '../../config/node-config.json';
 import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
-import { NodeConfiguration } from "./node-configuration";
+import {Configuration} from "../system/configuration";
 
-@Injectable([Blockchain])
+@Injectable([Blockchain, Configuration])
 export class Node {
     static TRANSACTIONS_PER_BLOCK_LIMIT = 2;
 
     constructor(
         @Inject(Blockchain) blockchain,
-        @Inject(NodeConfiguration) config
+        @Inject(Configuration) config
     ) {
-        this._config = config;
+        this._config = config.node;
         this._blockchain = blockchain;
 
         this._transactions = [];
@@ -125,5 +124,3 @@ export class Node {
         return incrementor;
     }
 }
-
-export const node = new Node(new Blockchain(), nodeConfig);

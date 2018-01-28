@@ -1,0 +1,13 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 3008
+  },
+  "p2p": {
+    "host": "localhost",
+    "port": 6001
+  },
+  "node": {
+    "mindeAddress": "3235ffdasdfasdf"
+  }
+}

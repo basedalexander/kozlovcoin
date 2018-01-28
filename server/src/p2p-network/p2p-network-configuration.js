@@ -3,15 +3,16 @@ import { Environment } from "../system/environment";
 import { Configuration } from "../system/configuration";
 
 @Injectable([Environment, Configuration])
-export class ServerConfiguration {
+export class P2PNetworkConfiguration {
     constructor(
         @Inject(Environment) env,
         @Inject(Configuration) config
     ) {
         this.env = env;
-        this.config = config.server;
+        this.config = config.p2p;
 
-        this.host = env.serverHost ? env.serverHost : this.config.host;
-        this.port = env.serverPort ?  env.serverPort : this.config.port;
+        this.host = env.p2pHost ? env.p2pHost : this.config.host;
+        this.port = env.p2pPort ? env.p2pPort : this.config.port;
+        this.peers = env.p2pPeers ? env.p2pPeers.split(',') : [];
     }
 }

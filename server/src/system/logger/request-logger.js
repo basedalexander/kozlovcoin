@@ -8,7 +8,7 @@ export const requestLoggerProvider = {
         return function (req, res, next) {
             logger.log(`${req.protocol} ${req.method} ${req.originalUrl}`);
 
-            if (req.body) {
+            if (req.method === 'POST' | req.method === 'PUT') {
                 logger.log(JSON.stringify(req.body));
             }
 

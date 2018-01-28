@@ -55,7 +55,7 @@ export class Server {
         app.use(bodyParser.json());
         app.use(this._requestLogger);
 
-        this.swagger.init(this.app);
+        // this.swagger.init(this.app);
     }
 
     _setupRouting(app) {

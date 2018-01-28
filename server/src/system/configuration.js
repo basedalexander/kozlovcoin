@@ -1,0 +1,1 @@
+export const Configuration = Symbol('Configuration');

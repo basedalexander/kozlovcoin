@@ -2,21 +2,23 @@ import WebSocket from 'ws';
 import { Injectable, Inject } from 'container-ioc';
 
 import { EMessageType } from "./message-type.enum";
-import './message-handlers/message-handlers';
 import { TLogger } from "../system/logger/logger";
 import { Node } from '../application/node';
 import { MessageHandlerFactory } from "./message-handler-factory";
+import { P2PNetworkConfiguration } from "./p2p-network-configuration";
 
-@Injectable([Node, TLogger, MessageHandlerFactory])
+@Injectable([Node, TLogger, MessageHandlerFactory, P2PNetworkConfiguration])
 export class P2PNetwork {
     constructor(
         @Inject(Node) node,
         @Inject(TLogger) logger,
-        @Inject(MessageHandlerFactory) messageHandlerFactory
+        @Inject(MessageHandlerFactory) messageHandlerFactory,
+        @Inject(P2PNetworkConfiguration) config,
     ) {
         this._node = node;
         this._logger = logger;
         this._messageHandlerFactory = messageHandlerFactory;
+        this._config = config;
 
         this._initializePeers();
 
@@ -29,9 +31,9 @@ export class P2PNetwork {
     }
 
     start() {
-        this._server = new WebSocket.Server({port: 6001}); // todo read from config
+        this._server = new WebSocket.Server({port: this._config.port});
         this._server.on('connection', ws => this._initConnection(ws));
-        this._logger.log('listening websocket p2p port on: ' + 6001);
+        this._logger.log(`Listening websocket p2p port on: ${this._config.port}`);
     }
 
     broadcast(message) {
@@ -48,7 +50,7 @@ export class P2PNetwork {
     }
 
     _initializePeers() {
-        this._initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : []; // todo read from config
+        this._initialPeers = this._config.peers;
         this._sockets = [];
 
         this._initialPeers.forEach(peer => {
@@ -70,7 +72,7 @@ export class P2PNetwork {
         });
 
         ws.on('error', () => {
-            this._log.error('connection failed')
+            this._logger.error(`ws connection failed : ${ws.url}`)
         });
     }
 

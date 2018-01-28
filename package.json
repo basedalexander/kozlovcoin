@@ -12,7 +12,9 @@
     "clean": "rimraf dist",
     "build": "npm run clean && mkdir -p dist && babel src -s -D -d dist",
     "test": "jest --coverage --watch",
-    "lint": "esw -w src"
+    "lint": "esw -w src",
+    "compose": "docker-compose down && docker-compose build --no-cache && docker-compose up",
+    "compose-up": "docker-compose up"
   },
   "author": "",
   "license": "ISC",

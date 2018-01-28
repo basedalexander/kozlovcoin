@@ -1,18 +1,22 @@
 import { Injectable, Inject } from 'container-ioc';
+import crypto from 'crypto';
 
 import { Blockchain } from './blockchain/blockchain';
 import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
 import {Configuration} from "../system/configuration";
+import {hexToBinary} from "../lib/utils";
 
 @Injectable([Blockchain, Configuration])
 export class Node {
-    static TRANSACTIONS_PER_BLOCK_LIMIT = 2;
-
     constructor(
         @Inject(Blockchain) blockchain,
         @Inject(Configuration) config
     ) {
+        this.TRANSACTIONS_PER_BLOCK_LIMIT = 2;
+        this.BLOCK_GENERATION_INTERVAL = 10;
+        this.DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
+
         this._config = config.node;
         this._blockchain = blockchain;
 
@@ -51,7 +55,7 @@ export class Node {
     addTransaction(transaction) {
         this._transactions.push(transaction);
 
-        if (this._transactions.length === Node.TRANSACTIONS_PER_BLOCK_LIMIT) {
+        if (this._transactions.length === this.TRANSACTIONS_PER_BLOCK_LIMIT) {
             this.mine();
         }
     }
@@ -62,7 +66,6 @@ export class Node {
 
     mine() {
         const lastBlock = this._blockchain.getLatestBlock();
-        const lastProof = lastBlock.data.proof;
 
         this.addTransaction({
             from: 'network',
@@ -70,49 +73,108 @@ export class Node {
             amount: 1
         });
 
-        const proof = this._createProofOfWork(lastProof);
+        const index = lastBlock.index + 1;
+        const timeStamp = this._getCurrentTime();
+        const data = { transactions: this._transactions };
+        const previousHash = lastBlock.hash;
+        const difficulty = this._getDifficulty(this._blockchain.getBlocks());
 
-        const newBlockData = {
-            proof: proof,
-            transactions: this._transactions
-        };
+        const newBlock = this._findBlock(
+            index,
+            timeStamp,
+            data,
+            previousHash,
+            this.difficulty
+        );
 
-        const newBlock = this._createNextBlock(lastBlock, newBlockData);
         this._blockchain.addBlock(newBlock);
-
         this.clearTransactions();
-
         this.blockMined.emit(newBlock);
 
         return newBlock;
     }
 
-    _createGenesysBlock() {
-        const genesysData = {
-            proof: 0,
-            transactions: []
-        };
+    _findBlock(
+        index,
+        timeStamp,
+        data,
+        previousHash,
+        difficulty
+    ) {
+        let nonce = 0;
 
-        return new Block(0, '0', genesysData, '0');
-    }
-
-    _createNextBlock(prevBlock, data) {
-        const index = (prevBlock.index + 1);
-        const date = new Date();
-
-        return new Block(index, date, data, prevBlock.hash);
-    }
-
-    _createProofOfWork(lastProof) {
-        let incrementor = lastProof + 1;
-
-        while(
-            ((incrementor % 9) !== 0) &&
-            ((incrementor % lastProof) !== 0)
-        ) {
-            incrementor += 1;
+        while (true) {
+            const hash = this._calcHash(index, previousHash, timeStamp, data, difficulty, nonce);
+            if (this._hashMatchesDifficulty(hash, difficulty)) {
+                return new Block(index, timeStamp, data, previousHash, hash, difficulty, nonce);
+            }
+            nonce++;
         }
+    }
 
-        return incrementor;
+    _getDifficulty(blockchain) {
+        const latestBlock = blockchain[blockchain.length - 1];
+        if (latestBlock.index % this.DIFFICULTY_ADJUSTMENT_INTERVAL === 0 && latestBlock.index !== 0) {
+            return this._getAdjustedDifficulty(latestBlock, blockchain);
+        } else {
+            return latestBlock.difficulty;
+        }
+    }
+
+    _getAdjustedDifficulty(latestBlock, blockchain) {
+        const prevAdjustmentBlock = blockchain[blockchain.length - this.DIFFICULTY_ADJUSTMENT_INTERVAL];
+        const timeExpected = this.BLOCK_GENERATION_INTERVAL * this.DIFFICULTY_ADJUSTMENT_INTERVAL;
+        const timeTaken = latestBlock.timeStamp - prevAdjustmentBlock.timeStamp;
+
+        if (timeTaken < timeExpected / 2) {
+            return prevAdjustmentBlock.difficulty + 1;
+        } else if (timeTaken > timeExpected * 2) {
+            return prevAdjustmentBlock.difficulty - 1;
+        } else {
+            return prevAdjustmentBlock.difficulty;
+        }
+    }
+    
+    _isValidTimeStamp(newBlock, previousBlock) {
+        const currentTimeStamp = this._getCurrentTimestamp();
+        return ( (previousBlock.timeStamp - 60) < newBlock.timeStamp) && 
+               ( (newBlock.timeStamp - 60) < currentTimeStamp);
+    }
+
+    _createGenesysBlock() {
+        const data = { transactions: [] };
+        return new Block(0, '0', data, '0', 0, 0);
+    }
+
+    _hashMatchesDifficulty(hash, difficulty) {
+        const hashInBinary = hexToBinary(hash);
+        const requiredPrefix = '0'.repeat(difficulty);
+        return hashInBinary.startsWith(requiredPrefix);
+    }
+
+    _getCurrentTime() {
+        return Math.round(Date.now() / 1000);
+    }
+
+    _calcHash(
+        index,
+        timeStamp,
+        data,
+        previousBlockHash,
+        difficulty,
+        nonce
+    ) {
+        const hash = crypto.createHash('sha256');
+
+        data = JSON.stringify(data);
+
+        return hash
+            .update(`${index}`)
+            .update(`${timeStamp}`)
+            .update(`${data}`)
+            .update(`${previousBlockHash}`)
+            .update(`${difficulty}`)
+            .update(`${nonce}`)
+            .digest('hex');
     }
 }

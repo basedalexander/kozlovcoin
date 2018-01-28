@@ -19,6 +19,7 @@
   "rules": {
     "jest/no-focused-tests": 2,
     "jest/no-identical-title": 2,
-    "no-unused-vars": ["off", { "argsIgnorePattern": "@" }]
+    "no-unused-vars": ["off", { "argsIgnorePattern": "@" }],
+    "no-constant-condition": "off"
   }
 }

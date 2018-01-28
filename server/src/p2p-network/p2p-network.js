@@ -24,7 +24,7 @@ export class P2PNetwork {
 
         this._node.blockMined.subscribe((block) => {
             this.broadcast({
-                type: EMessageType.NEW_BLOCK_MINED,
+                type: EMessageType.RESPONSE_LATEST_BLOCK,
                 data: block
             });
         });
@@ -32,8 +32,16 @@ export class P2PNetwork {
 
     start() {
         this._server = new WebSocket.Server({port: this._config.port});
-        this._server.on('connection', ws => this._initConnection(ws));
-        this._logger.log(`Listening websocket p2p port on: ${this._config.port}`);
+
+        this._server.on('connection', (ws, req) => {
+
+            this._socket = ws;
+            this._host = req.headers['host'];
+
+            this._initConnection(ws);
+        });
+
+        this._logger.log(`P2P Network is listening on port: ${this._config.port}`);
     }
 
     broadcast(message) {
@@ -42,6 +50,8 @@ export class P2PNetwork {
 
     sendMessage(ws, message) {
         const serializedMessage = JSON.stringify(message);
+
+        this._logger.log(`P2P ${this._config.port} ---> ${this._getSocketUrl(ws)}: ${serializedMessage}`);
         ws.send(serializedMessage);
     }
 
@@ -49,46 +59,42 @@ export class P2PNetwork {
         return this._sockets.map(socket => socket.url);
     }
 
+    _getSocketUrl(socket) {
+        return (socket === this._socket) ? `ws://${this._host}` : socket.url;
+    }
+
+
     _initializePeers() {
         this._initialPeers = this._config.peers;
         this._sockets = [];
 
         this._initialPeers.forEach(peer => {
             const ws = new WebSocket(peer);
-            this._initConnection(ws);
+
+            ws.on('open', () => this._initConnection(ws));
+            ws.on('error', () => {
+                this._logger.error(`ws connection failed : ${this._getSocketUrl(ws)}`);
+            });
         });
     }
 
     _initConnection(ws) {
-        ws.on('open', () => {
-            this._sockets.push(ws);
-            this._setupMessageHandler(ws);
-            this._setupErrorHandler(ws);
+        this._sockets.push(ws);
 
+        this._setupMessageHandler(ws);
+        this._setupErrorHandler(ws);
+
+        if (ws !== this._socket) {
             this.sendMessage(ws, {
-                type: EMessageType.QUERY_LATEST_BLOCK, // todo encapsulate message creation
+                type: EMessageType.QUERY_LATEST_BLOCK,
                 data: null
-            })
-        });
-
-        ws.on('error', () => {
-            this._logger.error(`ws connection failed : ${ws.url}`)
-        });
-    }
-
-    _createContext() {
-        return {
-            p2pNetwork: this,
-            initialPeers: this._initialPeers,
-            sockets: this._sockets,
-            node: this._node,
-            logger: this._logger
+            });
         }
     }
 
     _setupMessageHandler(ws) {
         ws.on('message', (data) => {
-            this._logger.log(`Received message: ${data}`);
+            this._logger.log(`P2P ${this._config.port} <--- ${this._getSocketUrl(ws)}: ${data}`);
 
             const message = JSON.parse(data);
 
@@ -98,12 +104,12 @@ export class P2PNetwork {
     }
 
     _setupErrorHandler(ws) {
-        ws.on('close', () => this._closePeerConnection(ws));
-        ws.on('error', () => this._closePeerConnection(ws));
+        ws.on('close', (err) => this._closePeerConnection(ws, err));
+        ws.on('error', (err) => this._closePeerConnection(ws, err));
     }
 
-    _closePeerConnection(ws) {
-        this.logger.log('Connection with peer failed, url: ' + ws.url);
+    _closePeerConnection(ws, err) {
+        this._logger.log(`P2P ERROR connection failed: ${this._getSocketUrl(ws)} ERROR_CODE: ${err}`);
         const index = this._sockets.indexOf(ws);
         this._sockets.splice(index, 1);
     }

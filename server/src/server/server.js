@@ -25,9 +25,9 @@ export class Server {
         @Inject(TRequestLogger) requestLogger,
     ) {
         this._config = config;
-        this.node = node;
-        this.logger = logger;
-        this.swagger = new Swagger(logger);
+        this._node = node;
+        this._logger = logger;
+        this._swagger = new Swagger(logger);
         this._p2p = p2p;
         this._requestLogger = requestLogger;
 
@@ -35,8 +35,12 @@ export class Server {
     }
 
     start() {
-        this.app.listen(this._config.port, () => {
-            this.logger.log(`Server is listening on port ${this._config.port}`)
+        this.app.listen(this._config.port, (err) => {
+            if (err) {
+                this._logger.error(err);
+            } else {
+                this._logger.log(`Server is listening on port ${this._config.port}`)
+            }
         });
     }
 
@@ -53,19 +57,20 @@ export class Server {
     _setupMiddleware(app) {
         app.use(bodyParser.urlencoded({ extended: false }));
         app.use(bodyParser.json());
+
         app.use(this._requestLogger);
 
-        // this.swagger.init(this.app);
+        // this._swagger.init(this.app);
     }
 
     _setupRouting(app) {
         app.post('/transaction', (req, res) => {
-            this.node.addTransaction(req.body);
+            this._node.addTransaction(req.body);
             res.end();
         });
 
         app.get('/mine', (req, res) => {
-            const minedBlock = this.node.mine();
+            const minedBlock = this._node.mine();
 
             res.json({
                 index: minedBlock.index,
@@ -76,7 +81,7 @@ export class Server {
         });
 
         app.get('/blocks', (req, res) => {
-            const chain = this.node.getBlocks();
+            const chain = this._node.getBlocks();
             res.json(chain);
         });
 

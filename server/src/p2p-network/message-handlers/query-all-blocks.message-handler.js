@@ -4,24 +4,25 @@ import { MessageHandler } from "../message-handler.decorator";
 import { EMessageType } from "../message-type.enum";
 import { P2PNetwork } from "../p2p-network";
 import { Node } from '../../application/node';
+import {Blockchain} from "../../application/blockchain/blockchain";
 
-@Injectable([Node, P2PNetwork])
+@Injectable([Blockchain, P2PNetwork])
 @MessageHandler(EMessageType.QUERY_ALL_BLOCKS)
 export class QueryAllBlocksMessageHandler {
     constructor(
-        @Inject(Node) node,
+        @Inject(Blockchain) blockchain,
         @Inject(P2PNetwork) p2p
     ) {
-        this._node = node;
+        this._blockchain = blockchain;
         this._p2p = p2p;
     }
 
     execute(ws) {
-        const blocks = this._node.getAllBlocks();
+        const blocks = this._blockchain.getBlocks();
 
         const message = {
             type: EMessageType.RESPONSE_ALL_BLOCKS,
-            data: JSON.stringify(blocks)
+            data: blocks
         };
 
         this._p2p.sendMessage(ws, message);

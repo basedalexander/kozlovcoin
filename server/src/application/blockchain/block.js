@@ -3,7 +3,7 @@ import crypto from 'crypto';
 export class Block {
     constructor (index, date, data, previousBlockHash) {
         this.index = index;
-        this.timeStamp = date.toISOString();
+        this.timeStamp = (typeof date === 'string') ? date: date.toISOString();
         this.data = data;
         this.previousBlockHash = previousBlockHash;
         this.hash = Block.createHash(this);

@@ -20,24 +20,16 @@ export class Node {
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
+
+        this.init();
     }
 
     init() {
-        this.blockchain.addBlock(this._createGenesysBlock());
+        this._blockchain.addBlock(this._createGenesysBlock());
     }
 
     getBlocks() {
-        const blocks = this._blockchain.getBlocks();
-
-        return blocks.map((block) => {
-            return {
-                index: block.index,
-                timeStamp: block.timeStamp,
-                data: block.data,
-                hash: block.hash,
-                previousBlockHash: block.previousBlockHash
-            };
-        });
+        return this._blockchain.getBlocks();
     }
 
     validateBlock(newBlock, previousBlock) {
@@ -69,7 +61,7 @@ export class Node {
     }
 
     mine() {
-        const lastBlock = this._blockchain.getLastBlock();
+        const lastBlock = this._blockchain.getLatestBlock();
         const lastProof = lastBlock.data.proof;
 
         this.addTransaction({

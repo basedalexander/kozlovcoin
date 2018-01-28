@@ -14,7 +14,7 @@ export class Blockchain {
         this._blocks.push(block);
     }
 
-    getLastBlock() {
+    getLatestBlock() {
         return this._blocks[this._blocks.length - 1];
     }
 }

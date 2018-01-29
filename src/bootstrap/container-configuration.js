@@ -12,6 +12,10 @@ import { requestLoggerProvider } from "../system/logger/request-logger";
 import { Environment } from "../system/environment";
 import { Configuration } from "../system/configuration";
 import {P2PNetworkConfiguration} from "../p2p-network/p2p-network-configuration";
+import { controllers } from "../application/api/controllers/index";
+import {ControllerFactory} from "../application/api/controller-factory";
+import {TxUtilsService} from "../application/transaction/tx-utils.service";
+import {TxValidationService} from "../application/transaction/tx-validation.service";
 
 export const containerConfiguration = [
     P2PNetwork,
@@ -21,10 +25,15 @@ export const containerConfiguration = [
 
     Server,
     ServerConfiguration,
+    ...controllers,
+    ControllerFactory,
     Swagger,
 
     Node,
     Blockchain,
+
+    TxUtilsService,
+    TxValidationService,
 
     Environment,
     {

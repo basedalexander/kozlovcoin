@@ -1,14 +1,30 @@
-import * as express from "express";
+import { Injectable, Inject } from 'container-ioc';
+import { BaseController } from "./base-controller";
+import { TLogger } from "../../../system/logger/logger";
+import { Controller } from "../controller.decorator";
 
-// todo intergrate IoC container
+@Controller({
+    path: '/wallet'
+})
+@Injectable([TLogger])
+export class WalletController extends BaseController {
+    constructor(
+        @Inject(TLogger) logger
+    ) {
+        super();
 
-export const WalletController = {
-    path: '/wallet',
-    router: router
-};
+        this._logger = logger;
+    }
 
-const router = express.Router();
+    init() {
+        this.router.get('/balance', (req, res) => {
+            res.send({
+                success: 'ok'
+            });
+        });
 
-router.get('/balance', (req, res) => {
-    res.send({});
-});
+        this.router.post('/sendTransaction', (req, res) => {
+            res.send({});
+        });
+    }
+}

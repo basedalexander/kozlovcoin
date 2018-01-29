@@ -3,18 +3,21 @@ import { Injectable, Inject } from 'container-ioc';
 import bodyParser from 'body-parser';
 
 import { Swagger } from './swagger';
-import {ServerConfiguration} from "./server-configuration";
+import { ServerConfiguration } from "./server-configuration";
 import { TLogger } from "../system/logger/logger";
 import { Node } from '../application/node';
-import {P2PNetwork} from "../p2p-network/p2p-network";
-import {TRequestLogger} from "../system/logger/request-logger";
+import { P2PNetwork } from "../p2p-network/p2p-network";
+import { TRequestLogger } from "../system/logger/request-logger";
+import { controllers } from "../application/api/controllers/index";
+import { ControllerFactory } from "../application/api/controller-factory";
 
 @Injectable([
     ServerConfiguration,
     Node,
     TLogger,
     P2PNetwork,
-    TRequestLogger
+    TRequestLogger,
+    ControllerFactory
 ])
 export class Server {
     constructor(
@@ -23,6 +26,7 @@ export class Server {
         @Inject(TLogger) logger,
         @Inject(P2PNetwork) p2p,
         @Inject(TRequestLogger) requestLogger,
+        @Inject(ControllerFactory) controllerFactory
     ) {
         this._config = config;
         this._node = node;
@@ -30,6 +34,7 @@ export class Server {
         this._swagger = new Swagger(logger);
         this._p2p = p2p;
         this._requestLogger = requestLogger;
+        this._controllerFactory = controllerFactory;
 
         this._init();
     }
@@ -51,51 +56,22 @@ export class Server {
     _init() {
         this.app = express();
         this._setupMiddleware(this.app);
-        this._setupRouting(this.app);
+        this._setupControllers(this.app);
     }
 
     _setupMiddleware(app) {
         app.use(bodyParser.urlencoded({ extended: false }));
         app.use(bodyParser.json());
-
         app.use(this._requestLogger);
-
-        // this._swagger.init(this.app);
     }
 
-    // todo integrate actual controllers
-    _setupRouting(app) {
-        app.post('/transaction', (req, res) => {
-            this._node.addTransaction(req.body);
-            res.end();
-        });
+    _setupControllers(app) {
+        controllers.forEach(controller => {
+            const data = this._controllerFactory.create(controller);
 
-        app.get('/mine', (req, res) => {
-            const minedBlock = this._node.mine();
-
-            res.json({
-                index: minedBlock.index,
-                timeStamp: minedBlock.timeStamp,
-                data: minedBlock.data,
-                hash: minedBlock.hash
-            });
-        });
-
-        app.get('/blocks', (req, res) => {
-            const chain = this._node.getBlocks();
-            res.json(chain);
-        });
-
-        app.get('/peers', (req, res) => {
-            const peers = this._p2p.getPeers();
-            res.json(peers);
-        });
-
-        app.post('/mineTransaction', (req, res) => {
-            const address = req.body.address;
-            const amount = req.body.amount;
-            const resp = {}; // todo add transaction to the transaction pool and mine a new block
-            res.send(resp);
+            const path = data.path;
+            const router = data.controller.router;
+            app.use(path, router);
         });
     }
 }

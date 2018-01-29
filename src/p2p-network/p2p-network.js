@@ -1,5 +1,5 @@
-import WebSocket from 'ws';
 import { Injectable, Inject } from 'container-ioc';
+import WebSocket from 'ws';
 
 import { EMessageType } from "./message-type.enum";
 import { TLogger } from "../system/logger/logger";
@@ -7,7 +7,12 @@ import { Node } from '../application/node';
 import { MessageHandlerFactory } from "./message-handler-factory";
 import { P2PNetworkConfiguration } from "./p2p-network-configuration";
 
-@Injectable([Node, TLogger, MessageHandlerFactory, P2PNetworkConfiguration])
+@Injectable([
+    Node,
+    TLogger,
+    MessageHandlerFactory,
+    P2PNetworkConfiguration
+])
 export class P2PNetwork {
     constructor(
         @Inject(Node) node,

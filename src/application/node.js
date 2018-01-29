@@ -6,8 +6,8 @@ import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
 import { Configuration } from "../system/configuration";
 import { hexToBinary } from "../lib/utils";
-import {TxValidationService} from "./blockchain/transaction/tx-validation.service";
-import {TxUtilsService} from "./blockchain/transaction/tx-utils.service";
+import {TxValidationService} from "./transaction/tx-validation.service";
+import {TxUtilsService} from "./transaction/tx-utils.service";
 import {TLogger} from "../system/logger/logger";
 
 @Injectable([Blockchain, Configuration, TLogger, TxValidationService, TxUtilsService])

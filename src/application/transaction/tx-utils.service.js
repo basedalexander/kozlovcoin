@@ -2,12 +2,12 @@ import { Injectable } from 'container-ioc';
 import * as ecdsa from 'elliptic';
 import crypto from 'crypto';
 
-import { toHexString } from "../../../lib/utils";
+import { toHexString } from "../../lib/utils";
 import { UnspentTxOutput } from "./unspent-tx-output";
 import {Transaction} from "./tx";
 import {TxInput} from "./tx-input";
 import {TxOutput} from "./tx-output";
-import {TLogger} from "../../../system/logger/logger";
+import {TLogger} from "../../system/logger/logger";
 
 @Injectable([TLogger])
 export class TxUtilsService {

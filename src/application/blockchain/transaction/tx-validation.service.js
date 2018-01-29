@@ -1,4 +1,5 @@
 import * as ecdsa from 'elliptic';
+import * as _ from 'lodash'
 
 import { Injectable, Inject } from 'container-ioc';
 import { TxUtilsService } from "./tx-utils.service";
@@ -37,34 +38,59 @@ export class TxValidationService {
         return true;
     }
 
-    validateStructure(tx) {
-        if (typeof tx.id !== 'string') {
-            this._logError(`tx id is missing`); // todo debug only
+    validateTx(tx, unspentTxOutputs) {
+
+        if (this._txUtilsService.getTxId(tx) !== tx.id) {
+            this._logError('invalid tx id: ' + tx.id);
+            return false;
+        }
+        const hasValidTxInputs = tx.inputs
+            .map((txInput) => this.validateTxInput(txInput, tx, unspentTxOutputs))
+            .reduce((a, b) => a && b, true);
+
+        if (!hasValidTxInputs) {
+            this._logError('some of the txIns are invalid in tx: ' + tx.id);
             return false;
         }
 
-        if (!(tx.inputs instanceof Array)) {
-            this._logError(`tx inputs are missing`); // todo debug only
-            return false;
-        }
+        const totalTxInputValues = tx.inputs
+            .map((txInput) => this._txUtilsService.getTxInputAmount(txInput, unspentTxOutputs))
+            .reduce((a, b) => (a + b), 0);
 
-        if (!(tx.outputs instanceof Array)) {
-            this._logError(`tx outputs are missing`); // todo debug only
+        const totalTxOutputValues = tx.outputs
+            .map((txOut) => txOut.amount)
+            .reduce((a, b) => (a + b), 0);
+
+        if (totalTxOutputValues !== totalTxInputValues) {
+            this._logError('totalTxOutValues !== totalTxInValues in tx: ' + tx.id);
             return false;
         }
 
         return true;
     }
 
-    validateId(tx) {
-        const txId = this._txUtilsService.getTxId(tx);
-
-        if (tx.id !== txId) {
-            this._logError(`invalid tx id: ${tx.id}`); // todo debug only
+    // todo refactor
+    validateBlockTransaction(aTransactions, aUnspentTxOuts, blockIndex) {
+        const coinbaseTx = aTransactions[0];
+        if (!this.validateCoinbaseTx(coinbaseTx, blockIndex)) {
+            this._logError('invalid coinbase transaction: ' + JSON.stringify(coinbaseTx));
             return false;
         }
 
-        return true;
+        //check for duplicate txIns. Each txIn can be included only once
+        const txIns = _(aTransactions)
+            .map(tx => tx.txIns)
+            .flatten()
+            .value();
+
+        if (this._hasDuplicates(txIns)) {
+            return false;
+        }
+
+        // all but coinbase transactions
+        const normalTransactions = aTransactions.slice(1);
+        return normalTransactions.map((tx) => this.validateTx(tx, aUnspentTxOuts))
+            .reduce((a, b) => (a && b), true);
     }
 
     validateTxInput(txInput, tx, uTxOutputs) {
@@ -100,6 +126,111 @@ export class TxValidationService {
             this._logError(`totalTxOutValues !== totalTxInValues in tx: ${tx.id}`); // todo debug only
             return false;
         }
+    }
+
+    validateTxStructure(tx) {
+        if (typeof tx.id !== 'string') {
+            this._logError('transactionId missing');
+            return false;
+        }
+        if (!(tx.inputs instanceof Array)) {
+            this._logError('invalid txIns type in transaction');
+            return false;
+        }
+        if (!tx.inputs
+                .map(this.validateTxOutputStructure)
+                .reduce((a, b) => (a && b), true)) {
+            return false;
+        }
+
+        if (!(tx.outputs instanceof Array)) {
+            this._logError('invalid txIns type in transaction');
+            return false;
+        }
+
+        if (!tx.outputs
+                .map(this.validateTxOutputStructure)
+                .reduce((a, b) => (a && b), true)) {
+            return false;
+        }
+        return true;
+    }
+
+    validateTxInputStructure(txInput) {
+        if (txInput == null) {
+            this._logError('txIn is null');
+            return false;
+        } else if (typeof txInput.signature !== 'string') {
+            this._logError('invalid signature type in txIn');
+            return false;
+        } else if (typeof txInput.txOutputId !== 'string') {
+            this._logError('invalid txOutId type in txIn');
+            return false;
+        } else if (typeof  txInput.txOutputIndex !== 'number') {
+            this._logError('invalid txOutIndex type in txIn');
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    validateTxOutputStructure(txOutput) {
+        if (txOutput == null) {
+            this._logError('txOut is null');
+            return false;
+        } else if (typeof txOutput.address !== 'string') {
+            this._logError('invalid address type in txOut');
+            return false;
+        } else if (!this._isValidAddress(txOutput.address)) {
+            this._logError('invalid TxOut address');
+            return false;
+        } else if (typeof txOutput.amount !== 'number') {
+            this._logError('invalid amount type in txOut');
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    validateId(tx) {
+        const txId = this._txUtilsService.getTxId(tx);
+
+        if (tx.id !== txId) {
+            this._logError(`invalid tx id: ${tx.id}`); // todo debug only
+            return false;
+        }
+
+        return true;
+    }
+
+    // A valid address is a valid ecdsa public key in the 04 + X-coordinate + Y-coordinate format
+    _isValidAddress(address) {
+        if (address.length !== 130) {
+            this._logError('invalid public key length');
+            return false;
+        } else if (address.match('^[a-fA-F0-9]+$') === null) {
+            this._logError('public key must contain only hex characters');
+            return false;
+        } else if (!address.startsWith('04')) {
+            this._logError('public key must start with 04');
+            return false;
+        }
+        return true;
+    }
+
+    // todo get rid of lodash dependency
+    _hasDuplicates(txIns) {
+        const groups = _.countBy(txIns, (txIn) => txIn.txOutId + txIn.txOutId);
+        return _(groups)
+            .map((value, key) => {
+                if (value > 1) {
+                    this._logError('duplicate txIn: ' + key);
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            .includes(true);
     }
 
     // todo debug

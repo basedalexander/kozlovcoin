@@ -4,9 +4,17 @@ import crypto from 'crypto';
 
 import { toHexString } from "../../../lib/utils";
 import { UnspentTxOutput } from "./unspent-tx-output";
+import {Transaction} from "./tx";
+import {TxInput} from "./tx-input";
+import {TxOutput} from "./tx-output";
+import {TLogger} from "../../../system/logger/logger";
 
-@Injectable()
+@Injectable([TLogger])
 export class TxUtilsService {
+    constructor(@Inject(TLogger) logger) {
+        this._logger = logger;
+    }
+    
     getTxId(tx) {
         const txInContent = tx.inputs
             .map((txInput) => txInput.txOutputId + txInput.txOutputIndex)
@@ -21,6 +29,19 @@ export class TxUtilsService {
             .digest('hex');
     }
 
+    getCoinbaseTransaction(address, blockIndex, coinbaseAmount) {
+        const tx = new Transaction();
+        const txIn = new TxInput();
+        txIn.signature = "";
+        txIn.txOutId = "";
+        txIn.txOutIndex = blockIndex;
+
+        tx.inputs = [txIn];
+        tx.outputs = [new TxOutput(address, coinbaseAmount)];
+        tx.id = this.getTxId(tx);
+        return tx;
+    }
+
     signTxId(tx, txInIndex, privateKey, unspentTxOutputs) {
         const txInput = tx.inputs[txInIndex];
 
@@ -31,6 +52,31 @@ export class TxUtilsService {
         const dataToSign = tx.id;
 
         const signature = toHexString(key.sign(dataToSign).toDER()); // todo move to a service
+
+        return signature;
+    }
+
+    signTxIn(tx, txInIndex, privateKey, aUnspentTxOuts) {
+        const txIn = tx.inputs[txInIndex];
+
+        const dataToSign = tx.id;
+        const referencedUnspentTxOut = this.findUnspentTxOutput(txIn.txOutId, txIn.txOutIndex, aUnspentTxOuts);
+        if(referencedUnspentTxOut == null) {
+            this._logger.log('could not find referenced txOut');
+            throw Error();
+        }
+        const referencedAddress = referencedUnspentTxOut.address;
+
+        if (this.getPublicKey(privateKey) !== referencedAddress) {
+            this._logger.log('trying to sign an input with private' +
+                ' key that does not match the address that is referenced in txIn');
+            throw Error();
+        }
+
+        const ec = new ecdsa.ec('secp256k1'); // todo encapsulate ec
+        
+        const key = ec.keyFromPrivate(privateKey, 'hex');
+        const signature = toHexString(key.sign(dataToSign).toDER());
 
         return signature;
     }

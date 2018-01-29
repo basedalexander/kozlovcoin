@@ -4,8 +4,8 @@ import crypto from 'crypto';
 import { Blockchain } from './blockchain/blockchain';
 import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
-import {Configuration} from "../system/configuration";
-import {hexToBinary} from "../lib/utils";
+import { Configuration } from "../system/configuration";
+import { hexToBinary } from "../lib/utils";
 
 @Injectable([Blockchain, Configuration])
 export class Node {
@@ -16,11 +16,12 @@ export class Node {
         this.TRANSACTIONS_PER_BLOCK_LIMIT = 2;
         this.BLOCK_GENERATION_INTERVAL = 10;
         this.DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
+        this.COINBASE_AMOUNT = 50;
 
         this._config = config.node;
         this._blockchain = blockchain;
 
-        this._transactions = [];
+        this._txs = [];
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
@@ -52,16 +53,16 @@ export class Node {
         return true;
     }
 
-    addTransaction(transaction) {
-        this._transactions.push(transaction);
+    addTransaction(tx) {
+        this._txs.push(tx);
 
-        if (this._transactions.length === this.TRANSACTIONS_PER_BLOCK_LIMIT) {
+        if (this._txs.length === this.TRANSACTIONS_PER_BLOCK_LIMIT) {
             this.mine();
         }
     }
 
     clearTransactions() {
-        this._transactions = [];
+        this._txs = [];
     }
 
     mine() {
@@ -75,7 +76,7 @@ export class Node {
 
         const index = lastBlock.index + 1;
         const timeStamp = this._getCurrentTime();
-        const data = { transactions: this._transactions };
+        const data = { txs: this._txs };
         const previousHash = lastBlock.hash;
         const difficulty = this._getDifficulty(this._blockchain.getBlocks());
 
@@ -142,7 +143,7 @@ export class Node {
     }
 
     _createGenesysBlock() {
-        const data = { transactions: [] };
+        const data = { txs: [] };
         return new Block(0, '0', data, '0', 0, 0);
     }
 
@@ -164,9 +165,9 @@ export class Node {
         difficulty,
         nonce
     ) {
-        const hash = crypto.createHash('sha256');
-
         data = JSON.stringify(data);
+
+        const hash = crypto.createHash('sha256');
 
         return hash
             .update(`${index}`)

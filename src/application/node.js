@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { Blockchain } from './blockchain/blockchain';
 import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
-import { Configuration } from "../system/configuration";
+import { Configuration } from "../bootstrap/configuration";
 import { hexToBinary } from "../lib/utils";
 import {TxValidationService} from "./transaction/tx-validation.service";
 import {TxUtilsService} from "./transaction/tx-utils.service";
@@ -31,12 +31,18 @@ export class Node {
         this._txValidationService = txValidationService;
         this._txUtilsService = txUtilsService;
 
-        this._txs = [];
+        this._txs = [];              // todo refactor
+        this._unspentTxOutputs = []; // todo refactor
+        this._transactionsPool = []; // todo refactor
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
 
         this.init();
+    }
+
+    async sendTransaction(receiverAddress, amount) {
+
     }
 
     init() {

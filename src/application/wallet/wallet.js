@@ -9,20 +9,29 @@ import {TxInput} from "../transaction/tx-input";
 import {TxOutput} from "../transaction/tx-output";
 import {Transaction} from "../transaction/tx";
 import {TxUtilsService} from "../transaction/tx-utils.service";
+import {KeysService} from "./keys.service";
 
 const EC = new ec('secp256k1');
 
 // todo replace SYNC operations
-@Injectable([TxUtilsService, TLogger])
-class Wallet {
+@Injectable([
+    KeysService,
+    TxUtilsService,
+    TLogger
+])
+export class Wallet {
     constructor(
+        @Inject(KeysService) keysService,
         @Inject(TxUtilsService) txUtilsService,
         @Inject(TLogger) logger
     ) {
+        this._keysService = keysService;
         this._txUtilsService = txUtilsService;
         this._logger = logger;
+    }
 
-        this.PRIVATE_KEY_LOCATION = 'node/wallet/private_key';
+    createTransaction(receiverAddress, amount, privateKey, uTxOutputs, txPool) {
+
     }
 
     async sendCoins(receiverAddress, amount, uTxOutputs) {
@@ -48,22 +57,20 @@ class Wallet {
         this.signTxInputs(newTx, senderPrivateKey, uTxOutputs);
     }
 
-    generatePrivateKey() {
-        const keyPair = EC.genKeyPair();
-        const privateKey = keyPair.getPrivate();
-        return privateKey.toString(16);
-    }
-
     initWallet() {
         if (existsSync(this.PRIVATE_KEY_LOCATION)) {
             return;
         }
 
-        const newPrivateKey = this.generatePrivatekey();
+        const newPrivateKey = this._keysService.generatePrivateKey();
 
         writeFileSync(this.PRIVATE_KEY_LOCATION, newPrivateKey);
 
         this._logger.log('new wallet with private key created');
+    }
+
+    storeWallet() {
+
     }
 
     getPublicKeyFromWallet() {

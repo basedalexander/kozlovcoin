@@ -5,25 +5,25 @@ import { EMessageType } from "./message-type.enum";
 import { TLogger } from "../system/logger/logger";
 import { Node } from '../application/node';
 import { MessageHandlerFactory } from "./message-handler-factory";
-import { P2PNetworkConfiguration } from "./p2p-network-configuration";
+import {Configuration} from "../bootstrap/configuration";
 
 @Injectable([
     Node,
     TLogger,
     MessageHandlerFactory,
-    P2PNetworkConfiguration
+    Configuration
 ])
 export class P2PNetwork {
     constructor(
         @Inject(Node) node,
         @Inject(TLogger) logger,
         @Inject(MessageHandlerFactory) messageHandlerFactory,
-        @Inject(P2PNetworkConfiguration) config,
+        @Inject(Configuration) config,
     ) {
         this._node = node;
         this._logger = logger;
         this._messageHandlerFactory = messageHandlerFactory;
-        this._config = config;
+        this._config = config.p2p;
 
         this._initializePeers();
 

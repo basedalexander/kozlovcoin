@@ -1,6 +1,5 @@
 import {P2PNetwork} from "../p2p-network/p2p-network";
 import {Server} from "../server/server";
-import {ServerConfiguration} from "../server/server-configuration";
 import {Swagger} from "../server/swagger";
 import {Node } from '../application/node';
 import {Blockchain} from "../application/blockchain/blockchain";
@@ -10,21 +9,19 @@ import {MessageHandlerFactory} from "../p2p-network/message-handler-factory";
 import { messageHandlers } from "../p2p-network/message-handlers/message-handlers";
 import { requestLoggerProvider } from "../system/logger/request-logger";
 import { Environment } from "../system/environment";
-import { Configuration } from "../system/configuration";
-import {P2PNetworkConfiguration} from "../p2p-network/p2p-network-configuration";
+import { Configuration } from "./configuration";
 import { controllers } from "../application/api/controllers/index";
 import {ControllerFactory} from "../application/api/controller-factory";
 import {TxUtilsService} from "../application/transaction/tx-utils.service";
 import {TxValidationService} from "../application/transaction/tx-validation.service";
+import {WALLET_PROVIDERS} from "../application/wallet/wallet-providers";
 
 export const containerConfiguration = [
     P2PNetwork,
-    P2PNetworkConfiguration,
     MessageHandlerFactory,
     ...messageHandlers,
 
     Server,
-    ServerConfiguration,
     ...controllers,
     ControllerFactory,
     Swagger,
@@ -36,14 +33,9 @@ export const containerConfiguration = [
     TxValidationService,
 
     Environment,
-    {
-        token: Configuration,
-        useFactory: (env) => {
-            const configPrefix = env.config ? env.config : 'local';
-            return require(`../../config/${configPrefix}-config.json`);
-        },
-        inject: [Environment]
-    },
+    Configuration,
     { token: TLogger, useClass: ConsoleLogger },
-    requestLoggerProvider
+    requestLoggerProvider,
+
+    ...WALLET_PROVIDERS
 ];

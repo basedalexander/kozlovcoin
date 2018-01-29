@@ -3,16 +3,16 @@ import { Injectable, Inject } from 'container-ioc';
 import bodyParser from 'body-parser';
 
 import { Swagger } from './swagger';
-import { ServerConfiguration } from "./server-configuration";
 import { TLogger } from "../system/logger/logger";
 import { Node } from '../application/node';
 import { P2PNetwork } from "../p2p-network/p2p-network";
 import { TRequestLogger } from "../system/logger/request-logger";
 import { controllers } from "../application/api/controllers/index";
 import { ControllerFactory } from "../application/api/controller-factory";
+import { Configuration } from "../bootstrap/configuration";
 
 @Injectable([
-    ServerConfiguration,
+    Configuration,
     Node,
     TLogger,
     P2PNetwork,
@@ -21,14 +21,14 @@ import { ControllerFactory } from "../application/api/controller-factory";
 ])
 export class Server {
     constructor(
-        @Inject(ServerConfiguration) config,
+        @Inject(Configuration) config,
         @Inject(Node) node,
         @Inject(TLogger) logger,
         @Inject(P2PNetwork) p2p,
         @Inject(TRequestLogger) requestLogger,
         @Inject(ControllerFactory) controllerFactory
     ) {
-        this._config = config;
+        this._config = config.server;
         this._node = node;
         this._logger = logger;
         this._swagger = new Swagger(logger);

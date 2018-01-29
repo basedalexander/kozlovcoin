@@ -63,6 +63,7 @@ export class Server {
         // this._swagger.init(this.app);
     }
 
+    // todo integrate actual controllers
     _setupRouting(app) {
         app.post('/transaction', (req, res) => {
             this._node.addTransaction(req.body);
@@ -88,6 +89,13 @@ export class Server {
         app.get('/peers', (req, res) => {
             const peers = this._p2p.getPeers();
             res.json(peers);
+        });
+
+        app.post('/mineTransaction', (req, res) => {
+            const address = req.body.address;
+            const amount = req.body.amount;
+            const resp = {}; // todo add transaction to the transaction pool and mine a new block
+            res.send(resp);
         });
     }
 }

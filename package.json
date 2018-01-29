@@ -22,6 +22,7 @@
     "container-ioc": "^1.7.18",
     "elliptic": "^6.4.0",
     "express": "^4.16.2",
+    "lodash": "^4.17.4",
     "swagger-express-mw": "^0.7.0",
     "ws": "^4.0.0"
   },

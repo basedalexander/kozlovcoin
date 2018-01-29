@@ -6,20 +6,30 @@ import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
 import { Configuration } from "../system/configuration";
 import { hexToBinary } from "../lib/utils";
+import {TxValidationService} from "./transaction/tx-validation.service";
+import {TxUtilsService} from "./transaction/tx-utils.service";
+import {TLogger} from "../system/logger/logger";
 
-@Injectable([Blockchain, Configuration])
+@Injectable([Blockchain, Configuration, TLogger, TxValidationService, TxUtilsService])
 export class Node {
     constructor(
         @Inject(Blockchain) blockchain,
-        @Inject(Configuration) config
+        @Inject(Configuration) config,
+        @Inject(TLogger) logger,
+        @Inject(TxValidationService) txValidationService,
+        @Inject(TxUtilsService) txUtilsService
     ) {
         this.TRANSACTIONS_PER_BLOCK_LIMIT = 2;
         this.BLOCK_GENERATION_INTERVAL = 10;
         this.DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
         this.COINBASE_AMOUNT = 50;
 
-        this._config = config.node;
         this._blockchain = blockchain;
+        this._config = config.node;
+        this._logger = logger;
+
+        this._txValidationService = txValidationService;
+        this._txUtilsService = txUtilsService;
 
         this._txs = [];
 
@@ -177,5 +187,17 @@ export class Node {
             .update(`${difficulty}`)
             .update(`${nonce}`)
             .digest('hex');
+    }
+
+    _processTxs(txs, unspentTxOutputs, blockIndex) {
+        if (!this._txValidationService.isValidTxStructure(txs)) {
+            return null;
+        }
+
+        if (!this._txValidationService(txs, unspentTxOutputs, blockIndex)) {
+            this._logger.log('invalid block transactions');
+            return null;
+        }
+        return this._txUtilsService.updateUnspentTxOutputs(txs, unspentTxOutputs);
     }
 }

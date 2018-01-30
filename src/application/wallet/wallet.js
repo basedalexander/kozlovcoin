@@ -5,10 +5,10 @@ import * as _ from 'lodash';
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 
 import { TLogger } from "../../system/logger/logger";
-import {TxInput} from "../transaction/tx-input";
-import {TxOutput} from "../transaction/tx-output";
-import {Transaction} from "../transaction/tx";
-import {TxUtilsService} from "../transaction/tx-utils.service";
+import {TxInput} from "../transaction/classes/tx-input";
+import {TxOutput} from "../transaction/classes/tx-output";
+import {Transaction} from "../transaction/classes/tx";
+import {TxUtilsService} from "../transaction/services/tx-utils.service";
 import {KeysService} from "./keys.service";
 
 const EC = new ec('secp256k1');
@@ -30,31 +30,56 @@ export class Wallet {
         this._logger = logger;
     }
 
-    createTransaction(receiverAddress, amount, privateKey, uTxOutputs, txPool) {
+    async createTx(receiverPublicKey, amount, senderPrivateKey, uTxOutputs, txPool) {
+        const senderPublicKey = this._txUtilsService.getPublicKey(senderPrivateKey);
 
-    }
+        let senderUnspentTxOutputs = this.filterUTxOutputsForAddress(senderPublicKey, uTxOutputs);
 
-    async sendCoins(receiverAddress, amount, uTxOutputs) {
-        const senderPrivateKey = this.getPrivateKeyFromWallet();
-        const senderPublicKey = this.getPublicKeyFromWallet();
+        senderUnspentTxOutputs = this.filterTxPoolTxs(senderUnspentTxOutputs, txPool);
 
-        const newTx = new Transaction();
+        const {
+            includedUnspentTxOuts,
+            leftOverCoinsAmount
+        } = this.searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
 
-        const newUnsignedTxInputs = this.uTxOutputsToUnsignedTxInputs(matchedTxOutputsData.includedUnspentTxOuts);
-        const matchedTxOutputsData = this.findUnspentTxOutputsForAmount(amount, uTxOutputs);
+        const newUnsignedTxInputs = this.uTxOutputsToUnsignedTxInputs(includedUnspentTxOuts);
 
         const newTxOuts = this.createTxOutputs(
-            receiverAddress,
+            receiverPublicKey,
             senderPublicKey,
             amount,
-            matchedTxOutputsData.leftOverAmount
+            leftOverCoinsAmount
         );
 
+        const newTx = new Transaction();
         newTx.inputs = newUnsignedTxInputs;
         newTx.outputs = newTxOuts;
         newTx.id = this._txUtilsService.getTxId(newTx);
 
         this.signTxInputs(newTx, senderPrivateKey, uTxOutputs);
+
+        return newTx;
+    }
+
+    // todo refactor
+    filterTxPoolTxs(unspentTxOuts, transactionPool) {
+        const txIns = _(transactionPool)
+            .map(tx => tx.inputs)
+            .flatten()
+            .value();
+
+        const removableUTxOutputs = [];
+        for (const unspentTxOut of unspentTxOuts) {
+            const txIn = _.find(txIns, aTxIn => {
+                return aTxIn.txOutIndex === unspentTxOut.txOutIndex && aTxIn.txOutId === unspentTxOut.txOutId;
+            });
+
+            if (txIn !== undefined) {
+                removableUTxOutputs.push(unspentTxOut);
+            }
+        }
+
+        return _.without(unspentTxOuts, ...removableUTxOutputs);
     }
 
     initWallet() {
@@ -111,7 +136,11 @@ export class Wallet {
         });
     }
 
-    findUnspentTxOutputsForAmount(amount, uTxOutputs) {
+    filterUTxOutputsForAddress(address, uTxOutputs) {
+        return uTxOutputs.filter(uTxOutput => uTxOutput.address === address);
+    }
+
+    searchUnspentTxOutputsForAmount(amount, uTxOutputs) {
         let currentAmount = 0;
         const includedUTxOutputs = [];
 

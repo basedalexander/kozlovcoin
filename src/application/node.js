@@ -6,14 +6,23 @@ import { Block } from "./blockchain/block";
 import { EventEmitter } from '../lib/event-emitter';
 import { Configuration } from "../bootstrap/configuration";
 import { hexToBinary } from "../lib/utils";
-import {TxValidationService} from "./transaction/tx-validation.service";
-import {TxUtilsService} from "./transaction/tx-utils.service";
+import {TxValidationService} from "./transaction/services/tx-validation.service";
+import {TxUtilsService} from "./transaction/services/tx-utils.service";
 import {TLogger} from "../system/logger/logger";
+import {TransactionPool} from "./transaction/transaction-pool/transaction-pool";
 
-@Injectable([Blockchain, Configuration, TLogger, TxValidationService, TxUtilsService])
+@Injectable([
+    Blockchain,
+    TransactionPool,
+    Configuration,
+    TLogger,
+    TxValidationService,
+    TxUtilsService
+])
 export class Node {
     constructor(
         @Inject(Blockchain) blockchain,
+        @Inject(TransactionPool) transactionPool,
         @Inject(Configuration) config,
         @Inject(TLogger) logger,
         @Inject(TxValidationService) txValidationService,
@@ -25,6 +34,7 @@ export class Node {
         this.COINBASE_AMOUNT = 50;
 
         this._blockchain = blockchain;
+        this._transactionPool = transactionPool;
         this._config = config.node;
         this._logger = logger;
 
@@ -33,16 +43,34 @@ export class Node {
 
         this._txs = [];              // todo refactor
         this._unspentTxOutputs = []; // todo refactor
-        this._transactionsPool = []; // todo refactor
+        this._txPool = []; // todo refactor
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
+        this.txPoolUpdate = new EventEmitter();
 
         this.init();
     }
 
     async sendTransaction(receiverAddress, amount) {
 
+    }
+
+    async addTx(newTx) {
+        const uTxOutputs = await this.getUnspentTxOutputs();
+        const result = await this._transactionPool.addTx(newTx, uTxOutputs);
+        const pool = await this.getTxPool();
+
+        this.txPoolUpdate.emit(pool);
+    }
+
+    // todo prepared for refactoring
+    async getUnspentTxOutputs() {
+        return this._unspentTxOutputs;
+    }
+
+    async getTxPool() {
+        return this.transactionPool.getTxPool();
     }
 
     init() {

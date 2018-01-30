@@ -19,14 +19,14 @@ export class ResponseLatestBlockP2PMessageHandler {
         this._logger = logger;
     }
 
-    execute(ws, message) {
+    async execute(ws, message) {
         const receivedLatestBlock = message.data;
-        const heldLatestBlock = this._blockchain.getLatestBlock();
-
+        const heldLatestBlock = await this._blockchain.getLatestBlock();
 
         if (receivedLatestBlock.index > heldLatestBlock.index) {
             if (receivedLatestBlock.previousBlockHash === heldLatestBlock.hash) {
-                this._blockchain.addBlock(receivedLatestBlock);
+                await this._blockchain.addBlock(receivedLatestBlock);
+
                 this._p2p.broadcast({
                     type: P2PMessageType.RESPONSE_LATEST_BLOCK,
                     data: receivedLatestBlock

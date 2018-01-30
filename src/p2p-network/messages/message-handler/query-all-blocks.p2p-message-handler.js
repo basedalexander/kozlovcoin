@@ -16,8 +16,8 @@ export class QueryAllBlocksP2PMessageHandler {
         this._p2p = p2p;
     }
 
-    execute(ws) {
-        const blocks = this._blockchain.getBlocks();
+    async execute(ws) {
+        const blocks = await this._blockchain.getBlocks();
 
         const message = {
             type: P2PMessageType.RESPONSE_ALL_BLOCKS,

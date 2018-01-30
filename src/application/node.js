@@ -43,7 +43,6 @@ export class Node {
 
         this._txs = [];              // todo refactor
         this._unspentTxOutputs = []; // todo refactor
-        this._txPool = []; // todo refactor
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
@@ -70,17 +69,28 @@ export class Node {
     }
 
     async getTxPool() {
-        return this.transactionPool.getTxPool();
+        return this._transactionPool.getPool();
+    }
+
+    getStatus() {
+        return {
+            todo: true
+        }
     }
 
     init() {
         this._blockchain.addBlock(this._createGenesysBlock());
     }
 
-    getBlocks() {
+    async getBlocks() {
         return this._blockchain.getBlocks();
     }
 
+    async getLastBlock() {
+        return this._blockchain.getLatestBlock();
+    }
+
+    // todo move away
     validateBlock(newBlock, previousBlock) {
         if (newBlock.index !== (previousBlock.index + 1)) {
             return false;
@@ -109,8 +119,12 @@ export class Node {
         this._txs = [];
     }
 
-    mine() {
-        const lastBlock = this._blockchain.getLatestBlock();
+    async generateNewBlock() {
+        const coinbaseTx = this._txUtilsService.createCoinbaseTransaction()
+    }
+
+    async mine() {
+        const lastBlock = await this._blockchain.getLatestBlock();
 
         this.addTransaction({
             from: 'network',
@@ -122,7 +136,7 @@ export class Node {
         const timeStamp = this._getCurrentTime();
         const data = { txs: this._txs };
         const previousHash = lastBlock.hash;
-        const difficulty = this._getDifficulty(this._blockchain.getBlocks());
+        const difficulty = this._getDifficulty(await this._blockchain.getBlocks());
 
         const newBlock = this._findBlock(
             index,
@@ -132,7 +146,7 @@ export class Node {
             this.difficulty
         );
 
-        this._blockchain.addBlock(newBlock);
+        await this._blockchain.addBlock(newBlock);
         this.clearTransactions();
         this.blockMined.emit(newBlock);
 

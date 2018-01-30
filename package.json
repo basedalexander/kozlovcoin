@@ -6,8 +6,8 @@
   "scripts": {
     "prestart": "npm run -s build",
     "start": "node dist/index.js",
-    "node1": "SERVER_PORT=3005 P2P_PORT=6000 node dist/index.js",
-    "node2": "SERVER_PORT=3006 P2P_PORT=6001 P2P_PEERS=ws://localhost:6000 node dist/index.js",
+    "node1": "SERVER_PORT=3005 P2P_PORT=6000 npm start",
+    "node2": "SERVER_PORT=3006 P2P_PORT=6001 P2P_PEERS=ws://localhost:6000 npm start",
     "dev": "nodemon src/index.js --exec \"node -r babel-register\"",
     "clean": "rimraf dist",
     "build": "npm run clean && mkdir -p dist && babel src -s -D -d dist",
@@ -23,6 +23,8 @@
     "elliptic": "^6.4.0",
     "express": "^4.16.2",
     "lodash": "^4.17.4",
+    "mkdirp": "^0.5.1",
+    "mkdirp-promise": "^5.0.1",
     "swagger-express-mw": "^0.7.0",
     "ws": "^4.0.0"
   },

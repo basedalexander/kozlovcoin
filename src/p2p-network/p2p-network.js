@@ -31,8 +31,12 @@ export class P2PNetwork {
 
         this._initializePeers();
 
-        this._node.blockMined.subscribe((block) => {
-            this.broadcast(this._createMessage(P2PMessageType.RESPONSE_LATEST_BLOCK, block));
+        this._node.blockMined.subscribe(data => {
+            this.broadcast(this._createMessage(P2PMessageType.RESPONSE_LATEST_BLOCK, data));
+        });
+
+        this._node.txPoolUpdate.subscribe(data => {
+            this.broadcast(this._createMessage(P2PMessageType.RESPONSE_TX_POOL, data));
         });
     }
 
@@ -91,7 +95,15 @@ export class P2PNetwork {
         this._setupErrorHandler(ws);
 
         if (ws !== this._socket) {
-            this.sendMessage(ws, this._createMessage(P2PMessageType.QUERY_LATEST_BLOCK));
+            this.sendMessage(
+                ws,
+                this._createMessage(P2PMessageType.QUERY_LATEST_BLOCK)
+            );
+
+            this.sendMessage(
+                ws,
+                this._createMessage(P2PMessageType.QUERY_TX_POOL)
+            );
         }
     }
 

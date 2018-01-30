@@ -43,7 +43,6 @@ export class Node {
 
         this._txs = [];              // todo refactor
         this._unspentTxOutputs = []; // todo refactor
-        this._txPool = []; // todo refactor
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();

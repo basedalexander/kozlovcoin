@@ -1,43 +1,55 @@
-import * as express from "express";
+import { Injectable, Inject } from 'container-ioc';
+import { BaseController } from "./base-controller";
+import { TLogger } from "../../../system/logger/logger";
+import { Controller } from "../controller.decorator";
+import { Node } from '../../node';
 
-// todo intergrate IoC container
+@Controller({
+    path: '/'
+})
+@Injectable([
+    TLogger,
+    Node
+])
+export class NodeController extends BaseController {
+    constructor(
+        @Inject(TLogger) logger,
+        @Inject(Node) node
+    ) {
+        super();
 
-export const NodeController = {
-    path: '/node',
-    router: router
-};
+        this._logger = logger;
+        this._node = node;
+    }
 
-const router = express.Router();
+    init() {
+        this.router.post('/sendTransaction', async (req, res) => {
+            const address = req.body.address;
+            const amount = req.body.amount;
 
-router.post('/sendTransaction', (req, res) => {
-    this._node.addTransaction(req.body);
-    res.end();
-});
+            if (address === undefined || amount === undefined) {
+                return res.status(400).end();
+            }
 
-router.post('/mineTransaction', (req, res) => {
-    const address = req.body.address;
-    const amount = req.body.amount;
-    const resp = {}; // todo add transaction to the transaction pool and mine a new block
-    res.send(resp);
-});
+            const result = await this._node.sendTransaction();
 
-router.get('/mineBlock', (req, res) => {
-    const minedBlock = this._node.mine();
+            res.json(result);
+        });
 
-    res.json({
-        index: minedBlock.index,
-        timeStamp: minedBlock.timeStamp,
-        data: minedBlock.data,
-        hash: minedBlock.hash
-    });
-});
+        this.router.get('/mineBlock', (req, res) => {
+            const minedBlock = this._node.mine();
 
-router.get('/blocks', (req, res) => {
-    const chain = this._node.getBlocks();
-    res.json(chain);
-});
+            res.json({
+                index: minedBlock.index,
+                timeStamp: minedBlock.timeStamp,
+                data: minedBlock.data,
+                hash: minedBlock.hash
+            });
+        });
 
-router.get('/peers', (req, res) => {
-    const peers = this._p2p.getPeers();
-    res.json(peers);
-});
+        this.router.get('/blocks', (req, res) => {
+            const chain = this._node.getBlocks();
+            res.json(chain);
+        });
+    }
+}

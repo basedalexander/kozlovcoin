@@ -64,6 +64,7 @@ typings/
 .idea
 dist
 report
+user-storage
 
 # Runtime configuration for swagger app
 config/runtime.yaml

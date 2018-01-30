@@ -1,13 +1,13 @@
 import { Injectable, Inject } from 'container-ioc';
 
-import { MessageHandler } from "../message-handler.decorator";
-import { EMessageType } from "../message-type.enum";
-import { P2PNetwork } from "../p2p-network";
-import {Blockchain} from "../../application/blockchain/blockchain";
+import { P2PMessageHandler } from "./p2p-message-handler.decorator";
+import { P2PMessageType } from "../p2p-message-type";
+import { P2PNetwork } from "../../p2p-network";
+import {Blockchain} from "../../../application/blockchain/blockchain";
 
 @Injectable([Blockchain, P2PNetwork])
-@MessageHandler(EMessageType.QUERY_ALL_BLOCKS)
-export class QueryAllBlocksMessageHandler {
+@P2PMessageHandler(P2PMessageType.QUERY_ALL_BLOCKS)
+export class QueryAllBlocksP2PMessageHandler {
     constructor(
         @Inject(Blockchain) blockchain,
         @Inject(P2PNetwork) p2p
@@ -20,7 +20,7 @@ export class QueryAllBlocksMessageHandler {
         const blocks = this._blockchain.getBlocks();
 
         const message = {
-            type: EMessageType.RESPONSE_ALL_BLOCKS,
+            type: P2PMessageType.RESPONSE_ALL_BLOCKS,
             data: blocks
         };
 

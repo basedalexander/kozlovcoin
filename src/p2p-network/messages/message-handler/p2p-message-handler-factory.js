@@ -1,8 +1,8 @@
-import {NullMessageHandler} from "./message-handlers/null.mesasge-handler";
+import {NullP2PMessageHandler} from "./null.p2p-message-handler";
 import { Injectable, Inject, Container } from 'container-ioc';
 
 @Injectable([Container])
-export class MessageHandlerFactory {
+export class P2PMessageHandlerFactory {
     constructor(
         @Inject(Container) container
     ) {
@@ -11,14 +11,14 @@ export class MessageHandlerFactory {
     static registry = new Map();
 
     static register(type, handlerConstructor) {
-        MessageHandlerFactory.registry.set(type, handlerConstructor);
+        P2PMessageHandlerFactory.registry.set(type, handlerConstructor);
     }
 
     create(type) {
-        let handlerConstructor = MessageHandlerFactory.registry.get(type);
+        let handlerConstructor = P2PMessageHandlerFactory.registry.get(type);
 
         if (!handlerConstructor) {
-           handlerConstructor = NullMessageHandler;
+           handlerConstructor = NullP2PMessageHandler;
         }
 
         return this._container.resolve(handlerConstructor);

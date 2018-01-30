@@ -1,14 +1,14 @@
 import { Injectable, Inject } from 'container-ioc';
 
-import { MessageHandler } from "../message-handler.decorator";
-import { EMessageType } from "../message-type.enum";
-import { P2PNetwork} from "../p2p-network";
-import {TLogger} from "../../system/logger/logger";
-import { Blockchain } from "../../application/blockchain/blockchain";
+import { P2PMessageHandler } from "./p2p-message-handler.decorator";
+import { P2PMessageType } from "../p2p-message-type";
+import { P2PNetwork} from "../../p2p-network";
+import {TLogger} from "../../../system/logger/logger";
+import { Blockchain } from "../../../application/blockchain/blockchain";
 
 @Injectable([Blockchain, P2PNetwork, TLogger])
-@MessageHandler(EMessageType.RESPONSE_LATEST_BLOCK)
-export class ResponseLatestBlockMessageHandler {
+@P2PMessageHandler(P2PMessageType.RESPONSE_LATEST_BLOCK)
+export class ResponseLatestBlockP2PMessageHandler {
     constructor(
         @Inject(Blockchain) blockchain,
         @Inject(P2PNetwork) p2p,
@@ -28,13 +28,13 @@ export class ResponseLatestBlockMessageHandler {
             if (receivedLatestBlock.previousBlockHash === heldLatestBlock.hash) {
                 this._blockchain.addBlock(receivedLatestBlock);
                 this._p2p.broadcast({
-                    type: EMessageType.RESPONSE_LATEST_BLOCK,
+                    type: P2PMessageType.RESPONSE_LATEST_BLOCK,
                     data: receivedLatestBlock
                 });
             }
             else {
                 this._p2p.sendMessage(ws, {
-                    type: EMessageType.QUERY_ALL_BLOCKS
+                    type: P2PMessageType.QUERY_ALL_BLOCKS
                 })
             }
         }

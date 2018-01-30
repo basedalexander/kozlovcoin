@@ -1,13 +1,13 @@
 import { Injectable, Inject } from 'container-ioc';
 
-import { MessageHandler } from "../message-handler.decorator";
-import { EMessageType } from "../message-type.enum";
-import { P2PNetwork } from "../p2p-network";
-import { Blockchain} from "../../application/blockchain/blockchain";
+import { P2PMessageHandler } from "./p2p-message-handler.decorator";
+import { P2PMessageType } from "../p2p-message-type";
+import { P2PNetwork } from "../../p2p-network";
+import { Blockchain} from "../../../application/blockchain/blockchain";
 
 @Injectable([Blockchain, P2PNetwork])
-@MessageHandler(EMessageType.QUERY_LATEST_BLOCK)
-export class QueryLatestBlockMessageHandler {
+@P2PMessageHandler(P2PMessageType.QUERY_LATEST_BLOCK)
+export class QueryLatestBlockP2PMessageHandler {
     constructor(
         @Inject(Blockchain) blockchain,
         @Inject(P2PNetwork) p2p
@@ -20,7 +20,7 @@ export class QueryLatestBlockMessageHandler {
         const latestBlock = this._blockchain.getLatestBlock();
 
         const message = {
-            type: EMessageType.RESPONSE_LATEST_BLOCK,
+            type: P2PMessageType.RESPONSE_LATEST_BLOCK,
             data: latestBlock
         };
 

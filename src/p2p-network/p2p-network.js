@@ -1,37 +1,38 @@
 import { Injectable, Inject } from 'container-ioc';
 import WebSocket from 'ws';
 
-import { EMessageType } from "./message-type.enum";
+import { P2PMessageType } from "./messages/p2p-message-type";
 import { TLogger } from "../system/logger/logger";
 import { Node } from '../application/node';
-import { MessageHandlerFactory } from "./message-handler-factory";
+import { P2PMessageHandlerFactory } from "./messages/message-handler/p2p-message-handler-factory";
 import {Configuration} from "../bootstrap/configuration";
+import {P2PMessageFactory} from "./messages/message/p2p-message-factory";
 
 @Injectable([
     Node,
     TLogger,
-    MessageHandlerFactory,
+    P2PMessageFactory,
+    P2PMessageHandlerFactory,
     Configuration
 ])
 export class P2PNetwork {
     constructor(
         @Inject(Node) node,
         @Inject(TLogger) logger,
-        @Inject(MessageHandlerFactory) messageHandlerFactory,
+        @Inject(P2PMessageFactory) messageFactory,
+        @Inject(P2PMessageHandlerFactory) messageHandlerFactory,
         @Inject(Configuration) config,
     ) {
         this._node = node;
         this._logger = logger;
+        this._messageFactory = messageFactory;
         this._messageHandlerFactory = messageHandlerFactory;
         this._config = config.p2p;
 
         this._initializePeers();
 
         this._node.blockMined.subscribe((block) => {
-            this.broadcast({
-                type: EMessageType.RESPONSE_LATEST_BLOCK,
-                data: block
-            });
+            this.broadcast(this._createMessage(P2PMessageType.RESPONSE_LATEST_BLOCK, block));
         });
     }
 
@@ -90,11 +91,12 @@ export class P2PNetwork {
         this._setupErrorHandler(ws);
 
         if (ws !== this._socket) {
-            this.sendMessage(ws, {
-                type: EMessageType.QUERY_LATEST_BLOCK,
-                data: null
-            });
+            this.sendMessage(ws, this._createMessage(P2PMessageType.QUERY_LATEST_BLOCK));
         }
+    }
+
+    _createMessage(type, message) {
+        return this._messageFactory.create(type, message);
     }
 
     _setupMessageHandler(ws) {

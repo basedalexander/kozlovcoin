@@ -69,6 +69,10 @@ export class P2PNetwork {
         return this._sockets.map(socket => socket.url);
     }
 
+    async addPeer(url) {
+        this._initializePeer(url);
+    }
+
     _getSocketUrl(socket) {
         return (socket === this._socket) ? `ws://${this._host}` : socket.url;
     }
@@ -79,12 +83,16 @@ export class P2PNetwork {
         this._sockets = [];
 
         this._initialPeers.forEach(peer => {
-            const ws = new WebSocket(peer);
+            this._initializePeer(peer);
+        });
+    }
 
-            ws.on('open', () => this._initConnection(ws));
-            ws.on('error', () => {
-                this._logger.error(`ws connection failed : ${this._getSocketUrl(ws)}`);
-            });
+    _initializePeer(peer) {
+        const ws = new WebSocket(peer);
+
+        ws.on('open', () => this._initConnection(ws));
+        ws.on('error', () => {
+            this._logger.error(`ws connection failed : ${this._getSocketUrl(ws)}`);
         });
     }
 

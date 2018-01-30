@@ -23,27 +23,16 @@ export class NodeController extends BaseController {
     }
 
     init() {
-        this.router.post('/sendTransaction', async (req, res) => {
-            const address = req.body.address;
-            const amount = req.body.amount;
-
-            if (address === undefined || amount === undefined) {
-                return res.status(400).end();
-            }
-
-            const result = await this._node.sendTransaction();
-
-            res.json(result);
+        this.router.get('/status', async(req, res) => {
+            const status = this._node.getStatus();
+            res.json(status);
         });
 
-        this.router.get('/mineBlock', (req, res) => {
-            const minedBlock = this._node.mine();
+        this.router.get('/mine', async(req, res) => {
+            await this._node.mine();
 
             res.json({
-                index: minedBlock.index,
-                timeStamp: minedBlock.timeStamp,
-                data: minedBlock.data,
-                hash: minedBlock.hash
+                success: true
             });
         });
 

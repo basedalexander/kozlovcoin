@@ -72,6 +72,12 @@ export class Node {
         return this._transactionPool.getPool();
     }
 
+    getStatus() {
+        return {
+            todo: true
+        }
+    }
+
     init() {
         this._blockchain.addBlock(this._createGenesysBlock());
     }

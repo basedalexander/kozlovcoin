@@ -29,7 +29,7 @@ export class TxUtilsService {
             .digest('hex');
     }
 
-    getCoinbaseTransaction(address, blockIndex, coinbaseAmount) {
+    createCoinbaseTransaction(address, blockIndex, coinbaseAmount) {
         const tx = new Transaction();
         const txIn = new TxInput();
         txIn.signature = "";

@@ -69,7 +69,7 @@ export class Node {
     }
 
     async getTxPool() {
-        return this.transactionPool.getTxPool();
+        return this._transactionPool.getPool();
     }
 
     init() {
@@ -80,6 +80,7 @@ export class Node {
         return this._blockchain.getBlocks();
     }
 
+    // todo move away
     validateBlock(newBlock, previousBlock) {
         if (newBlock.index !== (previousBlock.index + 1)) {
             return false;
@@ -106,6 +107,10 @@ export class Node {
 
     clearTransactions() {
         this._txs = [];
+    }
+
+    async generateNewBlock() {
+        const coinbaseTx = this._txUtilsService.createCoinbaseTransaction()
     }
 
     mine() {

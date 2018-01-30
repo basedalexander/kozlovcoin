@@ -1,8 +1,6 @@
 import { Injectable, Inject } from 'container-ioc';
 import { ec } from 'elliptic';
-import * as _ from 'lodash';
-
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
+import _ from 'lodash';
 
 import { TLogger } from "../../system/logger/logger";
 import {TxInput} from "../transaction/classes/tx-input";
@@ -10,41 +8,55 @@ import {TxOutput} from "../transaction/classes/tx-output";
 import {Transaction} from "../transaction/classes/tx";
 import {TxUtilsService} from "../transaction/services/tx-utils.service";
 import {KeysService} from "./keys.service";
+import {Configuration} from "../../bootstrap/configuration";
+import {TWalletRepository} from "./wallet-repository/wallet-repository";
 
 const EC = new ec('secp256k1');
 
 // todo replace SYNC operations
 @Injectable([
+    Configuration,
+    TWalletRepository,
     KeysService,
     TxUtilsService,
     TLogger
 ])
 export class Wallet {
     constructor(
+        @Inject(Configuration) config,
+        @Inject(TWalletRepository) repository,
         @Inject(KeysService) keysService,
         @Inject(TxUtilsService) txUtilsService,
         @Inject(TLogger) logger
     ) {
+        this._config = config;
+        this._repository= repository;
         this._keysService = keysService;
         this._txUtilsService = txUtilsService;
         this._logger = logger;
+
+        this._initWallet();
+    }
+
+    async generateNew() {
+        return this._keysService.generateKeyPair();
     }
 
     async createTx(receiverPublicKey, amount, senderPrivateKey, uTxOutputs, txPool) {
         const senderPublicKey = this._txUtilsService.getPublicKey(senderPrivateKey);
 
-        let senderUnspentTxOutputs = this.filterUTxOutputsForAddress(senderPublicKey, uTxOutputs);
+        let senderUnspentTxOutputs = this._filterUTxOutputsForAddress(senderPublicKey, uTxOutputs);
 
         senderUnspentTxOutputs = this.filterTxPoolTxs(senderUnspentTxOutputs, txPool);
 
         const {
             includedUnspentTxOuts,
             leftOverCoinsAmount
-        } = this.searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
+        } = this._searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
 
-        const newUnsignedTxInputs = this.uTxOutputsToUnsignedTxInputs(includedUnspentTxOuts);
+        const newUnsignedTxInputs = this._uTxOutputsToUnsignedTxInputs(includedUnspentTxOuts);
 
-        const newTxOuts = this.createTxOutputs(
+        const newTxOuts = this._createTxOutputs(
             receiverPublicKey,
             senderPublicKey,
             amount,
@@ -56,9 +68,16 @@ export class Wallet {
         newTx.outputs = newTxOuts;
         newTx.id = this._txUtilsService.getTxId(newTx);
 
-        this.signTxInputs(newTx, senderPrivateKey, uTxOutputs);
+        this._signTxInputs(newTx, senderPrivateKey, uTxOutputs);
 
         return newTx;
+    }
+
+    async getBalance(address, unTxOutputs) {
+        return unTxOutputs
+            .filter(uTxOutput => uTxOutput.address === address)
+            .map((uTxOutput) => uTxOutput.amount)
+            .reduce((a, b) => a + b, 0);
     }
 
     // todo refactor
@@ -82,42 +101,34 @@ export class Wallet {
         return _.without(unspentTxOuts, ...removableUTxOutputs);
     }
 
-    initWallet() {
-        if (existsSync(this.PRIVATE_KEY_LOCATION)) {
+    async _initWallet() {
+        if (await this._repository.isSaved()) {
             return;
         }
 
         const newPrivateKey = this._keysService.generatePrivateKey();
 
-        writeFileSync(this.PRIVATE_KEY_LOCATION, newPrivateKey);
+        await this._storeWallet(newPrivateKey);
 
         this._logger.log('new wallet with private key created');
     }
 
-    storeWallet() {
-
+    async _storeWallet(wallet) {
+        try {
+            await this._repository.save(wallet);
+        } catch (e) {
+            this._logger.error(e.message);
+        }
     }
 
-    getPublicKeyFromWallet() {
-        const privateKey = this.getPrivateKeyFromWallet();
+    // todo should return keypair
+    async _retreieveWallet() {
+        const privateKey = this._repository.get();
         const key = EC.keyFromPrivate(privateKey, 'hex');
-        return key.getPublic().encode('hex');
+        return key.getPublic().encode('hex')
     }
 
-    getPrivateKeyFromWallet() {
-        const buffer = readFileSync(this.PRIVATE_KEY_LOCATION, 'utf8');
-        return buffer.toString();
-    }
-
-    // todo get rid of lodash
-    getBalance(address, unspentTxOutputs) {
-        return _(unspentTxOutputs)
-            .filter(uTxOutput => uTxOutput.address === address)
-            .map((uTxOutput) => uTxOutput.amount)
-            .sum();
-    }
-
-    createTxOutputs(receiverAddress, senderAddress, amount, leftOverAmount) {
+    _createTxOutputs(receiverAddress, senderAddress, amount, leftOverAmount) {
         const outputs = [
             new TxOutput(receiverAddress, amount)
         ];
@@ -129,18 +140,18 @@ export class Wallet {
         return outputs;
     }
 
-    signTxInputs(tx, privateKey, uTxOutputs) {
+    _signTxInputs(tx, privateKey, uTxOutputs) {
         tx.inputs.forEach((txInput, txInputIndex) => {
             txInput.signature = this._txUtilsService
                 .signTxIn(tx, txInputIndex, privateKey, uTxOutputs);
         });
     }
 
-    filterUTxOutputsForAddress(address, uTxOutputs) {
+    _filterUTxOutputsForAddress(address, uTxOutputs) {
         return uTxOutputs.filter(uTxOutput => uTxOutput.address === address);
     }
 
-    searchUnspentTxOutputsForAmount(amount, uTxOutputs) {
+    _searchUnspentTxOutputsForAmount(amount, uTxOutputs) {
         let currentAmount = 0;
         const includedUTxOutputs = [];
 
@@ -159,11 +170,11 @@ export class Wallet {
         throw Error('not enough coins to send transaction');
     }
 
-    uTxOutputsToUnsignedTxInputs(unspentTxOutputs) {
-        return unspentTxOutputs.map(uTxOutput => this.uTxOutputToUnsignedTxInput(uTxOutput));
+    _uTxOutputsToUnsignedTxInputs(unspentTxOutputs) {
+        return unspentTxOutputs.map(uTxOutput => this._uTxOutputToUnsignedTxInput(uTxOutput));
     }
 
-    uTxOutputToUnsignedTxInput(uTxOutput) {
+    _uTxOutputToUnsignedTxInput(uTxOutput) {
         const txIn = new TxInput();
         txIn.txOutputId = uTxOutput.txOutputId;
         txIn.txOutputIndex = uTxOutput.txOutputIndex;

@@ -65,6 +65,7 @@ typings/
 dist
 report
 user-storage
+scratch.txt
 
 # Runtime configuration for swagger app
 config/runtime.yaml

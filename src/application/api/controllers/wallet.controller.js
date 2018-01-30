@@ -19,18 +19,47 @@ export class WalletController extends BaseController {
     }
 
     init() {
-        this.router.get('/balance', (req, res) => {
+        this.router.get('/new', async(req, res) => {
+            const wallet = await this._walletManager.getNewWallet();
+            res.json(wallet);
+        });
+
+        this.router.get('/balance/:address', async(req, res) => {
+            const address = req.params.address;
+
+            const balance = await this._walletManager.getBalance(address);
             res.send({
-                success: 'ok'
+                balance: balance
             });
         });
 
         this.router.post('/sendCoins', async(req, res) => {
-            const success = await this._walletManager.sendCoins(req.body.address, req.body.amount);
 
-            res.json({
-                success: success
-            });
+            const txData = {
+                amount: req.body.amount,
+                from: {
+                    privateKey: req.body.from.privateKey,
+                    publicKey: req.body.from.publicKey
+                },
+                to: req.body.to
+            };
+
+            let newTx;
+
+            try {
+                newTx = await this._walletManager.sendCoins(txData);
+
+                res.json({
+                    success: !!newTx,
+                    transaction: newTx
+                });
+            } catch (error) {
+                res.json({
+                    error: {
+                        message: error.message
+                    }
+                });
+            }
         });
     }
 }

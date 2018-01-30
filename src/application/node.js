@@ -10,6 +10,7 @@ import {TxValidationService} from "./transaction/services/tx-validation.service"
 import {TxUtilsService} from "./transaction/services/tx-utils.service";
 import {TLogger} from "../system/logger/logger";
 import {TransactionPool} from "./transaction/transaction-pool/transaction-pool";
+import {UnspentTxOutput} from "./transaction/classes/unspent-tx-output";
 
 @Injectable([
     Blockchain,
@@ -51,10 +52,6 @@ export class Node {
         this.init();
     }
 
-    async sendTransaction(receiverAddress, amount) {
-
-    }
-
     async addTx(newTx) {
         const uTxOutputs = await this.getUnspentTxOutputs();
         const result = await this._transactionPool.addTx(newTx, uTxOutputs);
@@ -63,7 +60,6 @@ export class Node {
         this.txPoolUpdate.emit(pool);
     }
 
-    // todo prepared for refactoring
     async getUnspentTxOutputs() {
         return this._unspentTxOutputs;
     }
@@ -78,8 +74,12 @@ export class Node {
         }
     }
 
-    init() {
-        this._blockchain.addBlock(this._createGenesysBlock());
+    async init() {
+        const genesisBlock = this._createGenesisBlock();
+
+        await this._blockchain.addBlock(genesisBlock);
+
+        this._unspentTxOutputs = this._processTransactions(genesisBlock.data, [], genesisBlock.index);
     }
 
     async getBlocks() {
@@ -153,6 +153,7 @@ export class Node {
         return newBlock;
     }
 
+    // todo = mine
     _findBlock(
         index,
         timeStamp,
@@ -193,16 +194,64 @@ export class Node {
             return prevAdjustmentBlock.difficulty;
         }
     }
-    
+
+    _createGenesisBlock() {
+        const genesisTx = this._createGenesisTx(this._config.minerAddress, this._config.initialCoinAllocationAmount);
+
+        const index = 0;
+        const timeStamp = 1465154705;
+        const data = [genesisTx];
+        const previousHash = '';
+
+        const difficulty = 0;
+        const nonce = 0;
+
+        const hash = this._calcHash(
+            index,
+            timeStamp,
+            data,
+            previousHash,
+            difficulty,
+            nonce
+        );
+
+        return new Block(
+            index,
+            timeStamp,
+            data,
+            previousHash,
+            hash,
+            difficulty,
+            nonce
+        );
+    }
+
+    _createGenesisTx(publicAddress, initialCoinAllocationAmount) {
+        const tx = {
+            inputs: [
+                {
+                    signature: '',
+                    txOutputId: '',
+                    txOutputIndex: 0
+                }
+            ],
+            outputs: [
+                {
+                    address: publicAddress,
+                    amount: this.COINBASE_AMOUNT
+                }
+            ]
+        };
+
+        tx.id = this._txUtilsService.getTxId(tx);
+
+        return tx;
+    }
+
     _isValidTimeStamp(newBlock, previousBlock) {
         const currentTimeStamp = this._getCurrentTimestamp();
         return ( (previousBlock.timeStamp - 60) < newBlock.timeStamp) && 
                ( (newBlock.timeStamp - 60) < currentTimeStamp);
-    }
-
-    _createGenesysBlock() {
-        const data = { txs: [] };
-        return new Block(0, '0', data, '0', 0, 0);
     }
 
     _hashMatchesDifficulty(hash, difficulty) {
@@ -237,15 +286,35 @@ export class Node {
             .digest('hex');
     }
 
-    _processTxs(txs, unspentTxOutputs, blockIndex) {
-        if (!this._txValidationService.isValidTxStructure(txs)) {
-            return null;
-        }
-
-        if (!this._txValidationService(txs, unspentTxOutputs, blockIndex)) {
+    // todo move out of the class
+    _processTransactions(txs, unspentTxOutputs, blockIndex) {
+        if (!this._txValidationService.validateBlockTransactions(txs, unspentTxOutputs, blockIndex, this.COINBASE_AMOUNT)) {
             this._logger.log('invalid block transactions');
             return null;
         }
-        return this._txUtilsService.updateUnspentTxOutputs(txs, unspentTxOutputs);
+        return this._updateUnspentTransactionOutputs(txs, unspentTxOutputs);
+    }
+
+    _updateUnspentTransactionOutputs(aTransactions, aUnspentTxOuts) {
+        const newUnspentTxOuts = aTransactions
+        .map((t) => {
+            return t.outputs.map((txOut, index) => new UnspentTxOutput(t.id, index, txOut.address, txOut.amount));
+        })
+        .reduce((a, b) => a.concat(b), []);
+
+        const consumedTxOuts = aTransactions
+        .map((t) => t.inputs)
+        .reduce((a, b) => a.concat(b), [])
+        .map((txIn) => new UnspentTxOutput(txIn.txOutputId, txIn.txOutputIndex, '', 0));
+
+        const resultingUnspentTxOuts = aUnspentTxOuts
+        .filter(((uTxO) => !this._findUnspentTxOut(uTxO.txOutputId, uTxO.txOutputIndex, consumedTxOuts)))
+        .concat(newUnspentTxOuts);
+
+        return resultingUnspentTxOuts;
+    }
+
+    _findUnspentTxOut(transactionId, index, aUnspentTxOuts) {
+        return aUnspentTxOuts.find((uTxO) => uTxO.txOutputId === transactionId && uTxO.txOutputIndex === index);
     }
 }

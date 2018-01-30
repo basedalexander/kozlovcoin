@@ -33,8 +33,8 @@ export class TxUtilsService {
         const tx = new Transaction();
         const txIn = new TxInput();
         txIn.signature = "";
-        txIn.txOutId = "";
-        txIn.txOutIndex = blockIndex;
+        txIn.txOutputId = "";
+        txIn.txOutputIndex = blockIndex;
 
         tx.inputs = [txIn];
         tx.outputs = [new TxOutput(address, coinbaseAmount)];
@@ -60,7 +60,7 @@ export class TxUtilsService {
         const txIn = tx.inputs[txInIndex];
 
         const dataToSign = tx.id;
-        const referencedUnspentTxOut = this.findUnspentTxOutput(txIn.txOutId, txIn.txOutIndex, aUnspentTxOuts);
+        const referencedUnspentTxOut = this.findUnspentTxOutput(txIn.txOutputId, txIn.txOutputIndex, aUnspentTxOuts);
         if(referencedUnspentTxOut == null) {
             this._logger.log('could not find referenced txOut');
             throw Error();

@@ -1,5 +1,5 @@
 import * as ecdsa from 'elliptic';
-import * as _ from 'lodash'
+import _ from 'lodash'
 
 import { Injectable, Inject } from 'container-ioc';
 import { TxUtilsService } from "./tx-utils.service";
@@ -15,6 +15,11 @@ export class TxValidationService {
     }
 
     validateCoinbaseTx(tx, blockIndex, coinbaseAmount) {
+        if (typeof tx === 'undefined') {
+            this._logError('the first transaction in the block must be coinbase transaction');
+            return false;
+        }
+
         if (this._txUtilsService.getTxId(tx) !== tx.id) {
             this._logError('invalid coinbase tx id: ' + tx.id);
             return false;
@@ -23,7 +28,7 @@ export class TxValidationService {
             this._logError('one txIn must be specified in the coinbase transaction');
             return;
         }
-        if (tx.inputs[0].txOutIndex !== blockIndex) {
+        if (tx.inputs[0].txOutputIndex !== blockIndex) {
             this._logError('the txIn index in coinbase tx must be the block height');
             return false;
         }
@@ -70,16 +75,17 @@ export class TxValidationService {
     }
 
     // todo refactor
-    validateBlockTransaction(aTransactions, aUnspentTxOuts, blockIndex) {
+    validateBlockTransactions(aTransactions, aUnspentTxOuts, blockIndex, coinbaseAmount) {
         const coinbaseTx = aTransactions[0];
-        if (!this.validateCoinbaseTx(coinbaseTx, blockIndex)) {
+
+        if (!this.validateCoinbaseTx(coinbaseTx, blockIndex, coinbaseAmount)) {
             this._logError('invalid coinbase transaction: ' + JSON.stringify(coinbaseTx));
             return false;
         }
 
         //check for duplicate txIns. Each txIn can be included only once
         const txIns = _(aTransactions)
-            .map(tx => tx.txIns)
+            .map(tx => tx.inputs)
             .flatten()
             .value();
 
@@ -164,10 +170,10 @@ export class TxValidationService {
             this._logError('invalid signature type in txIn');
             return false;
         } else if (typeof txInput.txOutputId !== 'string') {
-            this._logError('invalid txOutId type in txIn');
+            this._logError('invalid txOutputId type in txIn');
             return false;
         } else if (typeof  txInput.txOutputIndex !== 'number') {
-            this._logError('invalid txOutIndex type in txIn');
+            this._logError('invalid txOutputIndex type in txIn');
             return false;
         } else {
             return true;
@@ -220,7 +226,7 @@ export class TxValidationService {
 
     // todo get rid of lodash dependency
     _hasDuplicates(txIns) {
-        const groups = _.countBy(txIns, (txIn) => txIn.txOutId + txIn.txOutId);
+        const groups = _.countBy(txIns, (txIn) => txIn.txOutputId + txIn.txOutputId);
         return _(groups)
             .map((value, key) => {
                 if (value > 1) {

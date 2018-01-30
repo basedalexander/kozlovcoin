@@ -76,8 +76,12 @@ export class Node {
         this._blockchain.addBlock(this._createGenesysBlock());
     }
 
-    getBlocks() {
+    async getBlocks() {
         return this._blockchain.getBlocks();
+    }
+
+    async getLastBlock() {
+        return this._blockchain.getLatestBlock();
     }
 
     // todo move away
@@ -113,8 +117,8 @@ export class Node {
         const coinbaseTx = this._txUtilsService.createCoinbaseTransaction()
     }
 
-    mine() {
-        const lastBlock = this._blockchain.getLatestBlock();
+    async mine() {
+        const lastBlock = await this._blockchain.getLatestBlock();
 
         this.addTransaction({
             from: 'network',
@@ -126,7 +130,7 @@ export class Node {
         const timeStamp = this._getCurrentTime();
         const data = { txs: this._txs };
         const previousHash = lastBlock.hash;
-        const difficulty = this._getDifficulty(this._blockchain.getBlocks());
+        const difficulty = this._getDifficulty(await this._blockchain.getBlocks());
 
         const newBlock = this._findBlock(
             index,
@@ -136,7 +140,7 @@ export class Node {
             this.difficulty
         );
 
-        this._blockchain.addBlock(newBlock);
+        await this._blockchain.addBlock(newBlock);
         this.clearTransactions();
         this.blockMined.emit(newBlock);
 

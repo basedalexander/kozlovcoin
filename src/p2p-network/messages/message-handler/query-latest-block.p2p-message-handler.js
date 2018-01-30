@@ -16,8 +16,8 @@ export class QueryLatestBlockP2PMessageHandler {
         this._p2p = p2p;
     }
 
-    execute(ws) {
-        const latestBlock = this._blockchain.getLatestBlock();
+    async execute(ws) {
+        const latestBlock = await this._blockchain.getLatestBlock();
 
         const message = {
             type: P2PMessageType.RESPONSE_LATEST_BLOCK,

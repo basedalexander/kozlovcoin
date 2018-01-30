@@ -5,7 +5,7 @@ import { Controller } from "../controller.decorator";
 import { Node } from '../../node';
 
 @Controller({
-    path: '/'
+    path: '/node'
 })
 @Injectable([
     TLogger,
@@ -47,9 +47,24 @@ export class NodeController extends BaseController {
             });
         });
 
-        this.router.get('/blocks', (req, res) => {
-            const chain = this._node.getBlocks();
-            res.json(chain);
+        this.router.get('/blocks', async(req, res) => {
+            const blocks = await this._node.getBlocks();
+            res.json(blocks);
+        });
+
+        this.router.get('/last_block', async(req, res) => {
+            const block = await this._node.getLastBlock();
+            res.json(block);
+        });
+
+        this.router.get('/utxouts', async(req, res) => {
+            const unspentTransactionOutputs = await this._node.getUnspentTxOutputs();
+            res.json(unspentTransactionOutputs);
+        });
+
+        this.router.get('/txpool', async(req, res) => {
+            const txPool = await this._node.getTxPool();
+            res.json(txPool);
         });
     }
 }

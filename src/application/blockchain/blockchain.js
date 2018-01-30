@@ -6,15 +6,15 @@ export class Blockchain {
         this._blocks = [];
     }
 
-    getBlocks() {
+    async getBlocks() {
         return this._blocks;
     }
 
-    addBlock(block) {
+    async addBlock(block) {
         this._blocks.push(block);
     }
 
-    getLatestBlock() {
+    async getLatestBlock() {
         return this._blocks[this._blocks.length - 1];
     }
 }

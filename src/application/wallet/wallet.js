@@ -6,7 +6,7 @@ import { TLogger } from "../../system/logger/logger";
 import {TxInput} from "../transaction/classes/tx-input";
 import {TxOutput} from "../transaction/classes/tx-output";
 import {Transaction} from "../transaction/classes/tx";
-import {TxUtilsService} from "../transaction/services/tx-utils.service";
+import {TransactionUtilsService} from "../transaction/services/transaction-utils.service";
 import {KeysService} from "./keys.service";
 import {Configuration} from "../../bootstrap/configuration";
 import {TWalletRepository} from "./wallet-repository/wallet-repository";
@@ -18,7 +18,7 @@ const EC = new ec('secp256k1');
     Configuration,
     TWalletRepository,
     KeysService,
-    TxUtilsService,
+    TransactionUtilsService,
     TLogger
 ])
 export class Wallet {
@@ -26,7 +26,7 @@ export class Wallet {
         @Inject(Configuration) config,
         @Inject(TWalletRepository) repository,
         @Inject(KeysService) keysService,
-        @Inject(TxUtilsService) txUtilsService,
+        @Inject(TransactionUtilsService) txUtilsService,
         @Inject(TLogger) logger
     ) {
         this._config = config;
@@ -63,7 +63,7 @@ export class Wallet {
         const newTx = new Transaction();
         newTx.inputs = newUnsignedTxInputs;
         newTx.outputs = newTxOuts;
-        newTx.id = this._txUtilsService.getTxId(newTx);
+        newTx.id = this._txUtilsService.calcTransactionId(newTx);
 
         this._signTxInputs(newTx, senderPrivateKey, uTxOutputs);
 

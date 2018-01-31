@@ -1,6 +1,6 @@
 import {Injectable} from "container-ioc";
 
-import { Node } from '../node';
+import { Node } from '../node/node';
 import {Wallet} from "./wallet";
 
 @Injectable([

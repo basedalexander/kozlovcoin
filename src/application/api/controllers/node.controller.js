@@ -2,24 +2,28 @@ import { Injectable, Inject } from 'container-ioc';
 import { BaseController } from "./base-controller";
 import { TLogger } from "../../../system/logger/logger";
 import { Controller } from "../controller.decorator";
-import { Node } from '../../node';
+import { Node } from '../../node/node';
+import {NodeManager} from "../../node/node-manager";
 
 @Controller({
     path: '/node'
 })
 @Injectable([
     TLogger,
-    Node
+    Node,
+    NodeManager
 ])
 export class NodeController extends BaseController {
     constructor(
         @Inject(TLogger) logger,
-        @Inject(Node) node
+        @Inject(Node) node,
+        @Inject(NodeManager) nodeManager,
     ) {
         super();
 
         this._logger = logger;
         this._node = node;
+        this._nodeManager = nodeManager;
     }
 
     init() {
@@ -29,11 +33,9 @@ export class NodeController extends BaseController {
         });
 
         this.router.get('/mine', async(req, res) => {
-            await this._node.mine();
+            const result = await this._nodeManager.generateNewBlock();
 
-            res.json({
-                success: true
-            });
+            res.json(result);
         });
 
         this.router.get('/blocks', async(req, res) => {

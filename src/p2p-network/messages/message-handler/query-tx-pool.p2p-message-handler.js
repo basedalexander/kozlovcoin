@@ -3,7 +3,7 @@ import { Injectable, Inject } from 'container-ioc';
 import { P2PMessageHandler } from "./p2p-message-handler.decorator";
 import { P2PMessageType } from "../p2p-message-type";
 import { P2PNetwork } from "../../p2p-network";
-import { Node } from "../../../application/node";
+import { Node } from "../../../application/node/node";
 import {TLogger} from "../../../system/logger/logger";
 import {P2PMessageFactory} from "../message/p2p-message-factory";
 

@@ -2,12 +2,12 @@ import * as ecdsa from 'elliptic';
 import _ from 'lodash'
 
 import { Injectable, Inject } from 'container-ioc';
-import { TxUtilsService } from "./tx-utils.service";
+import { TransactionUtilsService } from "./transaction-utils.service";
 
-@Injectable([TxUtilsService])
+@Injectable([TransactionUtilsService])
 export class TxValidationService {
     constructor(
-        @Inject(TxUtilsService) txUtilsService,
+        @Inject(TransactionUtilsService) txUtilsService,
         @Inject(TLogger) logger,
     ) {
         this._txUtilsService = txUtilsService;
@@ -20,7 +20,7 @@ export class TxValidationService {
             return false;
         }
 
-        if (this._txUtilsService.getTxId(tx) !== tx.id) {
+        if (this._txUtilsService.calcTransactionId(tx) !== tx.id) {
             this._logError('invalid coinbase tx id: ' + tx.id);
             return false;
         }
@@ -45,7 +45,7 @@ export class TxValidationService {
 
     validateTx(tx, unspentTxOutputs) {
 
-        if (this._txUtilsService.getTxId(tx) !== tx.id) {
+        if (this._txUtilsService.calcTransactionId(tx) !== tx.id) {
             this._logError('invalid tx id: ' + tx.id);
             return false;
         }
@@ -199,7 +199,7 @@ export class TxValidationService {
     }
 
     validateId(tx) {
-        const txId = this._txUtilsService.getTxId(tx);
+        const txId = this._txUtilsService.calcTransactionId(tx);
 
         if (tx.id !== txId) {
             this._logError(`invalid tx id: ${tx.id}`); // todo debug only

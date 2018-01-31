@@ -1,16 +1,17 @@
 import { Injectable, Inject } from 'container-ioc';
 import crypto from 'crypto';
 
-import { Blockchain } from './blockchain/blockchain';
-import { Block } from "./blockchain/block";
-import { EventEmitter } from '../lib/event-emitter';
-import { Configuration } from "../bootstrap/configuration";
-import { hexToBinary } from "../lib/utils";
-import {TxValidationService} from "./transaction/services/tx-validation.service";
-import {TxUtilsService} from "./transaction/services/tx-utils.service";
-import {TLogger} from "../system/logger/logger";
-import {TransactionPool} from "./transaction/transaction-pool/transaction-pool";
-import {UnspentTxOutput} from "./transaction/classes/unspent-tx-output";
+import { Blockchain } from '../blockchain/blockchain';
+import { Block } from "./block/block";
+import { EventEmitter } from '../../lib/event-emitter';
+import { Configuration } from "../../bootstrap/configuration";
+import { hexToBinary } from "../../lib/utils";
+import {TxValidationService} from "../transaction/services/tx-validation.service";
+import {TransactionUtilsService} from "../transaction/services/transaction-utils.service";
+import {TLogger} from "../../system/logger/logger";
+import {TransactionPool} from "../transaction/transaction-pool/transaction-pool";
+import {UnspentTxOutput} from "../transaction/classes/unspent-tx-output";
+import {BlockFactory} from "./block/block-factory";
 
 @Injectable([
     Blockchain,
@@ -18,7 +19,8 @@ import {UnspentTxOutput} from "./transaction/classes/unspent-tx-output";
     Configuration,
     TLogger,
     TxValidationService,
-    TxUtilsService
+    TransactionUtilsService,
+    BlockFactory
 ])
 export class Node {
     constructor(
@@ -27,7 +29,8 @@ export class Node {
         @Inject(Configuration) config,
         @Inject(TLogger) logger,
         @Inject(TxValidationService) txValidationService,
-        @Inject(TxUtilsService) txUtilsService
+        @Inject(TransactionUtilsService) txUtilsService,
+        @Inject(BlockFactory) blockFactory,
     ) {
         this.TRANSACTIONS_PER_BLOCK_LIMIT = 2;
         this.BLOCK_GENERATION_INTERVAL = 10;
@@ -38,11 +41,11 @@ export class Node {
         this._transactionPool = transactionPool;
         this._config = config.node;
         this._logger = logger;
+        this._blockFactory = blockFactory;
 
         this._txValidationService = txValidationService;
         this._txUtilsService = txUtilsService;
 
-        this._txs = [];              // todo refactor
         this._unspentTxOutputs = []; // todo refactor
 
         this.blockMined = new EventEmitter();
@@ -75,7 +78,9 @@ export class Node {
     }
 
     async init() {
-        const genesisBlock = this._createGenesisBlock();
+        const genesisTx = this._createGenesisTx(this._config.minerAddress, this._config.initialCoinAllocationAmount);
+
+        const genesisBlock = this._blockFactory.createGenesis(genesisTx);
 
         await this._blockchain.addBlock(genesisBlock);
 
@@ -120,38 +125,121 @@ export class Node {
     }
 
     async generateNewBlock() {
-        const coinbaseTx = this._txUtilsService.createCoinbaseTransaction()
+        const address = this._config.minerAddress;
+        const lastBlock = await this._blockchain.getLastBlock();
+
+        const coinbaseTx = this._txUtilsService.createCoinbaseTransaction(address, lastBlock.index + 1);
+
+        const uncofirmedTransactions = await this._transactionPool.getPool();
+
+        const blockData = [coinbaseTx].concat(uncofirmedTransactions);
+
+        return this._generateRawNewBlock(blockData);
     }
 
-    async mine() {
-        const lastBlock = await this._blockchain.getLatestBlock();
+    // todo unit-test
+    async _generateRawNewBlock(transactions) {
+        const previousBlock = await this._blockchain.getLastBlock();
+        const blocks = await this._blockchain.getBlocks();
 
-        this.addTransaction({
-            from: 'network',
-            to: this._config.minerAddress,
-            amount: 1
-        });
+        const difficulty = this._getDifficulty(blocks);
+        const nextIndex = previousBlock.index + 1;
 
-        const index = lastBlock.index + 1;
-        const timeStamp = this._getCurrentTime();
-        const data = { txs: this._txs };
-        const previousHash = lastBlock.hash;
-        const difficulty = this._getDifficulty(await this._blockchain.getBlocks());
+        const nextTimeStamp = this._getCurrentTimeStamp();
 
-        const newBlock = this._findBlock(
-            index,
-            timeStamp,
-            data,
-            previousHash,
-            this.difficulty
-        );
+        const newBlock = this._findBlock(nextIndex, nextTimeStamp, transactions, previousBlock.hash, difficulty);
+        
+        const lastBlock = await this._blockchain.getLastBlock();
+        
+        const blockIsValid = await this._validateGeneratedBlock(newBlock, lastBlock);
+        
+        if (!blockIsValid) {
+            this._logger.error('New block is not valid');
+            return false;
+        }
+
+        const transactionsAreValid = await this._validateNewBlockTransactions(newBlock);
 
         await this._blockchain.addBlock(newBlock);
-        this.clearTransactions();
-        this.blockMined.emit(newBlock);
+
+        // await this._updateUTxOuts();
+
+        // await this._updateTxPool();
 
         return newBlock;
     }
+    
+    // Block validation starts ===========================================
+    
+    async _validateGeneratedBlock(newBlock, lastBlock) {
+        if (!this._validateBlockStructure(newBlock)) {
+            this._logger.log('invalid block structure: %s', JSON.stringify(newBlock));
+            return false;
+        }
+        if (lastBlock.index + 1 !== newBlock.index) {
+            this._logger.log('invalid index');
+            return false;
+        } else if (lastBlock.hash !== newBlock.previousHash) {
+            this._logger.log('invalid previoushash');
+            return false;
+        } else if (!this._isValidTimeStamp(newBlock, lastBlock)) {
+            this._logger.log('invalid timeStamp');
+            return false;
+        } else if (!this._hasValidHash(newBlock)) {
+            return false;
+        }
+        return true;
+    }
+
+    _validateBlockStructure(block) {
+        return typeof block.index === 'number'
+            && typeof block.hash === 'string'
+            && typeof block.previousHash === 'string'
+            && typeof block.timeStamp === 'number'
+            && typeof block.data === 'object';
+    }
+
+    _isValidTimeStamp(newBlock, previousBlock) {
+        return ( previousBlock.timeStamp - 60 < newBlock.timeStamp )
+            && newBlock.timeStamp - 60 < this._getCurrentTimeStamp();
+    }
+
+    _hasValidHash(block) {
+        if (!this._hashMatchesBlockContent(block)) {
+            this._logger.log('invalid hash, got:' + block.hash);
+            return false;
+        }
+
+        if (!this._hashMatchesDifficulty(block.hash, block.difficulty)) {
+            this._logger.log('block difficulty not satisfied. Expected: ' + block.difficulty + 'got: ' + block.hash);
+        }
+        return true;
+    }
+
+    _hashMatchesBlockContent(block) {
+        const blockHash = this._calculateHashForBlock(block);
+        return blockHash === block.hash;
+    }
+
+    _calculateHashForBlock(block) {
+        return this._calcHash(
+            block.index,
+            block.timeStamp,
+            block.data,
+            block.previousBlockHash,
+            block.difficulty,
+            block.nonce
+        );
+    }
+
+    _hashMatchesDifficulty(hash, difficulty) {
+        const hashInBinary = hexToBinary(hash);
+        const requiredPrefix = '0'.repeat(difficulty);
+        return hashInBinary.startsWith(requiredPrefix);
+    }
+
+    // validation ends ================================================================/
+
 
     // todo = mine
     _findBlock(
@@ -164,7 +252,7 @@ export class Node {
         let nonce = 0;
 
         while (true) {
-            const hash = this._calcHash(index, previousHash, timeStamp, data, difficulty, nonce);
+            const hash = this._calcHash(index, timeStamp, data, previousHash, difficulty, nonce);
             if (this._hashMatchesDifficulty(hash, difficulty)) {
                 return new Block(index, timeStamp, data, previousHash, hash, difficulty, nonce);
             }
@@ -243,24 +331,13 @@ export class Node {
             ]
         };
 
-        tx.id = this._txUtilsService.getTxId(tx);
+        tx.id = this._txUtilsService.calcTransactionId(tx);
 
         return tx;
     }
 
-    _isValidTimeStamp(newBlock, previousBlock) {
-        const currentTimeStamp = this._getCurrentTimestamp();
-        return ( (previousBlock.timeStamp - 60) < newBlock.timeStamp) && 
-               ( (newBlock.timeStamp - 60) < currentTimeStamp);
-    }
 
-    _hashMatchesDifficulty(hash, difficulty) {
-        const hashInBinary = hexToBinary(hash);
-        const requiredPrefix = '0'.repeat(difficulty);
-        return hashInBinary.startsWith(requiredPrefix);
-    }
-
-    _getCurrentTime() {
+    _getCurrentTimeStamp() {
         return Math.round(Date.now() / 1000);
     }
 

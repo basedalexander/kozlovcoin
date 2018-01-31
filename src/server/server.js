@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 
 import { Swagger } from './swagger';
 import { TLogger } from "../system/logger/logger";
-import { Node } from '../application/node';
+import { Node } from '../application/node/node';
 import { P2PNetwork } from "../p2p-network/p2p-network";
 import { TRequestLogger } from "../system/logger/request-logger";
 import { controllers } from "../application/api/controllers/index";

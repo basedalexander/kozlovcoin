@@ -33,7 +33,7 @@ export class WalletController extends BaseController {
             });
         });
 
-        this.router.post('/sendCoins', async(req, res) => {
+        this.router.post('/transaction', async(req, res) => {
 
             const txData = {
                 amount: req.body.amount,

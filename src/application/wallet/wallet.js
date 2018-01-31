@@ -49,18 +49,15 @@ export class Wallet {
 
         senderUnspentTxOutputs = this.filterTxPoolTxs(senderUnspentTxOutputs, txPool);
 
-        const {
-            includedUnspentTxOuts,
-            leftOverCoinsAmount
-        } = this._searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
+        const searchResult = this._searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
 
-        const newUnsignedTxInputs = this._uTxOutputsToUnsignedTxInputs(includedUnspentTxOuts);
+        const newUnsignedTxInputs = this._uTxOutputsToUnsignedTxInputs(searchResult.includedUnspentTxOuts);
 
         const newTxOuts = this._createTxOutputs(
             receiverPublicKey,
             senderPublicKey,
             amount,
-            leftOverCoinsAmount
+            searchResult.leftOverAmount
         );
 
         const newTx = new Transaction();
@@ -90,7 +87,7 @@ export class Wallet {
         const removableUTxOutputs = [];
         for (const unspentTxOut of unspentTxOuts) {
             const txIn = _.find(txIns, aTxIn => {
-                return aTxIn.txOutIndex === unspentTxOut.txOutIndex && aTxIn.txOutId === unspentTxOut.txOutId;
+                return aTxIn.txOutputIndex === unspentTxOut.txOutputIndex && aTxIn.txOutputId === unspentTxOut.txOutputId;
             });
 
             if (txIn !== undefined) {

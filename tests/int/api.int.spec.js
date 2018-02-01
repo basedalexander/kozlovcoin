@@ -16,10 +16,32 @@ describe('NODE REST API', () => {
 
     describe('/node/blocks', () => {
         describe('GET', () => {
-            it('should return genesis block', async() => {
-                const response = await request(app).get('/node/blocks');
+            it('Should return array of blocks', async() => {
+                const response = await request(app)
+                    .get('/node/blocks')
+                    .set('Accept', 'application/json');
 
-                expect(response.statusCode).toBe(200);
+                expect(response.body.data.length).toBe(1);
+            });
+
+            it('The first block should be with index 0', async() => {
+                const response = await request(app)
+                    .get('/node/blocks')
+                    .set('Accept', 'application/json');
+
+                expect(response.body.data[0].index).toBe(0);
+            });
+        });
+    });
+
+    describe('/node/last_block', () => {
+        describe('GET', () => {
+            it('Should return the latest block', async() => {
+                const response = await request(app)
+                    .get('/node/last_block')
+                    .set('Accept', 'application/json');
+
+                expect(response.body.data.index).toBe(0);
             });
         });
     });

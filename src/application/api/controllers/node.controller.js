@@ -40,12 +40,18 @@ export class NodeController extends BaseController {
 
         this.router.get('/blocks', async(req, res) => {
             const blocks = await this._node.getBlocks();
-            res.json(blocks);
+
+            res.json({
+                data: blocks
+            });
         });
 
         this.router.get('/last_block', async(req, res) => {
             const block = await this._node.getLastBlock();
-            res.json(block);
+
+            res.json({
+                data: block
+            });
         });
 
         this.router.get('/utxouts', async(req, res) => {

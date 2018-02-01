@@ -5,6 +5,8 @@ export class Environment {
     constructor() {
         this.config = process.env['ENV_CONFIG'];
 
+        this.mode = process.env['ENV_MODE'];
+
         this.serverHost = process.env['SERVER_HOST'];
         this.serverPort = process.env['SERVER_PORT'] ? +(process.env['SERVER_PORT']) : null;
 

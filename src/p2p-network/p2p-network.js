@@ -54,6 +54,10 @@ export class P2PNetwork {
         this._logger.log(`P2P Network is listening on port: ${this._config.port}`);
     }
 
+    close() {
+        this._server.close();
+    }
+
     broadcast(message) {
         this._sockets.forEach(socket => this.sendMessage(socket, message));
     }

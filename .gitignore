@@ -63,9 +63,14 @@ typings/
 # Custom
 .idea
 dist
-report
+
 user-storage
 scratch.txt
 
 # Runtime configuration for swagger app
 config/runtime.yaml
+
+# test coverage
+report-unit-test
+report-int-test
+report

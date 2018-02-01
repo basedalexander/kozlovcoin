@@ -12,8 +12,12 @@ import {WALLET_PROVIDERS} from "../application/wallet/wallet-providers";
 import {TRANSACTION_PROVIDERS} from "../application/transaction/transaction-providers";
 import {P2P_PROVIDERS} from "../p2p-network/p2p-providers";
 import {NODE_PROVIDERS} from "../application/node/node-providers";
+import {MockLogger} from "../system/logger/mock-logger";
+import {SYSTEM_PROVIDERS} from "../system/system-providers";
 
 export const containerConfiguration = [
+    Configuration,
+
     Server,
     ...controllers,
     ControllerFactory,
@@ -21,11 +25,7 @@ export const containerConfiguration = [
 
     Blockchain,
 
-    Environment,
-    Configuration,
-    { token: TLogger, useClass: ConsoleLogger },
-    requestLoggerProvider,
-
+    ...SYSTEM_PROVIDERS,
     ...NODE_PROVIDERS,
     ...P2P_PROVIDERS,
     ...TRANSACTION_PROVIDERS,

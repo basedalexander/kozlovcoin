@@ -40,7 +40,7 @@ export class Server {
     }
 
     start() {
-        this.app.listen(this._config.port, (err) => {
+        this.app.server = this.app.listen(this._config.port, (err) => {
             if (err) {
                 this._logger.error(err);
             } else {
@@ -49,8 +49,13 @@ export class Server {
         });
     }
 
+    stop() {
+        this.app.server.close();
+        this._p2p.close();
+    }
+
     getExpress() {
-        return this.app;
+        return this.app.server;
     }
 
     _init() {

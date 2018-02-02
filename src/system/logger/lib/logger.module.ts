@@ -17,5 +17,4 @@ import { LoggerMiddleware } from './logger.middleware';
     ]
 })
 export class LoggerModule {
-
 }

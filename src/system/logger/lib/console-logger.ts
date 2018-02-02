@@ -1,7 +1,7 @@
 /* tslint:disable:no-console */
 
 import { Component } from '@nestjs/common';
-import { ILogger } from './logger.interface';
+import { ILogger } from '../interfaces/logger.interface';
 
 @Component()
 export class ConsoleLogger implements ILogger {

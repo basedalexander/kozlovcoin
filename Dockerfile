@@ -1,20 +1,20 @@
 FROM node:8.2.1
 
-RUN mkdir /scroogecoin
+RUN mkdir /kozlovcoin
 
-COPY config /scroogecoin/config/
-COPY src /scroogecoin/src/
-COPY swagger-ui /scroogecoin/swagger-ui/
+COPY config /kozlovcoin/config/
+COPY src /kozlovcoin/src/
+COPY swagger-ui /kozlovcoin/swagger-ui/
 
-COPY package.json /scroogecoin/
-COPY jest.config.js /scroogecoin/
-COPY .babelrc /scroogecoin/
-COPY .gitignore /scroogecoin/
+COPY package.json /kozlovcoin/
+COPY jest.config.js /kozlovcoin/
+COPY .babelrc /kozlovcoin/
+COPY .gitignore /kozlovcoin/
 
-RUN cd /scroogecoin && npm install
+RUN cd /kozlovcoin && npm install
 
 EXPOSE 3008
 EXPOSE 6001
 
-WORKDIR /scroogecoin
+WORKDIR /kozlovcoin
 CMD P2P_PEERS=$P2P_PEERS npm start

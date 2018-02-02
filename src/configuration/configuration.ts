@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { IConfiguration, IP2PConfiguration, IServerConfiguration } from './configuration.interface';
 import { Component } from '@nestjs/common';
-import { Environment } from '../system/environment/environment';
+import { environment, Environment } from '../system/environment/environment';
 import { EnvType } from '../system/environment/environment.interface';
 
 @Component()
@@ -40,5 +40,6 @@ export class Configuration implements IConfiguration {
         const configPath: string = path.join('../../config', configName);
         return require(configPath);
     }
-
 }
+
+export const configuration: IConfiguration = new Configuration(environment);

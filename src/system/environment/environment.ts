@@ -13,3 +13,5 @@ export class Environment implements IEnvironment {
     public p2pPort = process.env['P2P_PORT'] ? +(process.env['P2P_PORT']) : null;
     public p2pPeers = process.env['P2P_PEERS'];
 }
+
+export const environment: IEnvironment = new Environment();

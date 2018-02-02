@@ -1,6 +1,6 @@
-import { Inject, Middleware } from '@nestjs/common';
 import { ExpressMiddleware, NestMiddleware } from '@nestjs/common/interfaces/middlewares';
 import { ILogger, TLogger } from '../interfaces/logger.interface';
+import { Inject, Middleware } from '@nestjs/common';
 
 @Middleware()
 export class LoggerMiddleware implements NestMiddleware {

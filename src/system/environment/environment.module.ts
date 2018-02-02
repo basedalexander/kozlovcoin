@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { Environment } from './environment';
+import { environment, Environment } from './environment';
 
 @Module({
     components: [
-        Environment
+        { provide: Environment, useValue: environment }
     ],
     exports: [
         Environment

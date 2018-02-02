@@ -1,19 +1,23 @@
 import { Module } from '@nestjs/common';
 
 import { StagingLogger } from './staging-logger';
+import { loggerProvider } from './logger-provider';
+import { MockLogger } from './mock-logger';
+import { EnvironmentModule } from '../../environment/environment.module';
 import { ConsoleLogger } from './console-logger';
-import { LoggerMiddleware } from './logger.middleware';
 
 @Module({
+    imports: [
+        EnvironmentModule
+    ],
     components: [
         ConsoleLogger,
         StagingLogger,
-        LoggerMiddleware
+        MockLogger,
+        loggerProvider
     ],
     exports: [
-        ConsoleLogger,
-        StagingLogger,
-        LoggerMiddleware
+        loggerProvider
     ]
 })
 export class LoggerModule {

@@ -13,19 +13,7 @@ import { MockLogger } from './logger/lib/mock-logger';
         LoggerModule
     ],
     components: [
-        {
-            provide: TLogger,
-            useFactory: async (env, consoleLogger, stagingLogger) => {
-                if (env.mode === 'local') {
-                    return consoleLogger;
-                } else if (env.mode === 'test') {
-                    return new MockLogger();
-                } else {
-                    return stagingLogger;
-                }
-            },
-            inject: [Environment, ConsoleLogger, StagingLogger]
-        }
+
     ],
     exports: [
         EnvironmentModule,

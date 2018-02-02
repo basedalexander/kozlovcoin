@@ -1,7 +1,7 @@
 import { Injectable, Inject } from "container-ioc";
 import {TLogger} from "../../../system/logger/logger";
 import {TxValidationService} from "../services/tx-validation.service";
-import * as _ from 'lodash'
+import _ from 'lodash';
 
 @Injectable([
     TxValidationService,

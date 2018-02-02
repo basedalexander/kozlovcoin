@@ -9,9 +9,9 @@
     "port": 6001
   },
   "node": {
-    "minerAddress": "3235ffdasdfasdf"
+    "minerAddress": "04ca0c8157dac7da27f9563e4ef63a7d7d2f010a5c3e7e1d8b669c01acfd4f580e1638b4db04d8afd45abe4029a205583c5a5610e7f33ee447f2cb72cbe65bf852"
   },
   "wallet": {
-    "storageDir": "user-storage"
+    "storageDir": "user-workspace"
   }
 }

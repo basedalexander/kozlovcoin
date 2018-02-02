@@ -20,7 +20,7 @@ export class P2PController extends BaseController {
     }
 
     init() {
-        this.router.post('/add_peer', async(req, res) => {
+        this.router.post('/peer', async(req, res) => {
             const peerUrl = req.body.url;
 
             const result = await this._p2p.addPeer(peerUrl);

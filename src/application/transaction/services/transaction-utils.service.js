@@ -7,15 +7,10 @@ import { UnspentTxOutput } from "../classes/unspent-tx-output";
 import {Transaction} from "../classes/tx";
 import {TxInput} from "../classes/tx-input";
 import {TxOutput} from "../classes/tx-output";
-import {TLogger} from "../../../system/logger/logger";
 
-@Injectable([TLogger])
-export class TxUtilsService {
-    constructor(@Inject(TLogger) logger) {
-        this._logger = logger;
-    }
-    
-    getTxId(tx) {
+@Injectable()
+export class TransactionUtilsService {
+    calcTransactionId(tx) {
         const txInContent = tx.inputs
             .map((txInput) => txInput.txOutputId + txInput.txOutputIndex)
             .reduce((a, b) => a + b, '');
@@ -24,8 +19,15 @@ export class TxUtilsService {
             .map((txOutput) => txOutput.address + txOutput.amount)
             .reduce((a, b) => a + b, '');
 
+        const id = `${txInContent}${txOutContent}`;
+
+        return this._createSHA256Hash(id);
+    }
+
+    // todo move to crypto service
+    _createSHA256Hash(string) {
         return crypto.createHash('sha256')
-            .update(txInContent + txOutContent)
+            .update(string)
             .digest('hex');
     }
 
@@ -33,12 +35,12 @@ export class TxUtilsService {
         const tx = new Transaction();
         const txIn = new TxInput();
         txIn.signature = "";
-        txIn.txOutId = "";
-        txIn.txOutIndex = blockIndex;
+        txIn.txOutputId = "";
+        txIn.txOutputIndex = blockIndex;
 
         tx.inputs = [txIn];
         tx.outputs = [new TxOutput(address, coinbaseAmount)];
-        tx.id = this.getTxId(tx);
+        tx.id = this.calcTransactionId(tx);
         return tx;
     }
 
@@ -60,7 +62,7 @@ export class TxUtilsService {
         const txIn = tx.inputs[txInIndex];
 
         const dataToSign = tx.id;
-        const referencedUnspentTxOut = this.findUnspentTxOutput(txIn.txOutId, txIn.txOutIndex, aUnspentTxOuts);
+        const referencedUnspentTxOut = this.findUnspentTxOutput(txIn.txOutputId, txIn.txOutputIndex, aUnspentTxOuts);
         if(referencedUnspentTxOut == null) {
             this._logger.log('could not find referenced txOut');
             throw Error();
@@ -68,9 +70,8 @@ export class TxUtilsService {
         const referencedAddress = referencedUnspentTxOut.address;
 
         if (this.getPublicKey(privateKey) !== referencedAddress) {
-            this._logger.log('trying to sign an input with private' +
+            throw Error('trying to sign an input with private' +
                 ' key that does not match the address that is referenced in txIn');
-            throw Error();
         }
 
         const ec = new ecdsa.ec('secp256k1'); // todo encapsulate ec

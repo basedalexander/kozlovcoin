@@ -3,7 +3,7 @@ import WebSocket from 'ws';
 
 import { P2PMessageType } from "./messages/p2p-message-type";
 import { TLogger } from "../system/logger/logger";
-import { Node } from '../application/node';
+import { Node } from '../application/node/node';
 import { P2PMessageHandlerFactory } from "./messages/message-handler/p2p-message-handler-factory";
 import {Configuration} from "../bootstrap/configuration";
 import {P2PMessageFactory} from "./messages/message/p2p-message-factory";
@@ -52,6 +52,10 @@ export class P2PNetwork {
         });
 
         this._logger.log(`P2P Network is listening on port: ${this._config.port}`);
+    }
+
+    close() {
+        this._server.close();
     }
 
     broadcast(message) {

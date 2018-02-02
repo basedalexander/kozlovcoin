@@ -1,6 +1,6 @@
 import {Injectable} from "container-ioc";
 
-import { Node } from '../node';
+import { Node } from '../node/node';
 import {Wallet} from "./wallet";
 
 @Injectable([
@@ -30,7 +30,7 @@ export class WalletManager {
         const txPool = await this._node.getTxPool();
 
         const newTx = await this._wallet.createTx(
-            txData.address,
+            txData.to,
             txData.amount,
             txData.from.privateKey,
             unTxOutputs,

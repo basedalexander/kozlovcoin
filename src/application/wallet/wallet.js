@@ -6,7 +6,7 @@ import { TLogger } from "../../system/logger/logger";
 import {TxInput} from "../transaction/classes/tx-input";
 import {TxOutput} from "../transaction/classes/tx-output";
 import {Transaction} from "../transaction/classes/tx";
-import {TxUtilsService} from "../transaction/services/tx-utils.service";
+import {TransactionUtilsService} from "../transaction/services/transaction-utils.service";
 import {KeysService} from "./keys.service";
 import {Configuration} from "../../bootstrap/configuration";
 import {TWalletRepository} from "./wallet-repository/wallet-repository";
@@ -18,7 +18,7 @@ const EC = new ec('secp256k1');
     Configuration,
     TWalletRepository,
     KeysService,
-    TxUtilsService,
+    TransactionUtilsService,
     TLogger
 ])
 export class Wallet {
@@ -26,7 +26,7 @@ export class Wallet {
         @Inject(Configuration) config,
         @Inject(TWalletRepository) repository,
         @Inject(KeysService) keysService,
-        @Inject(TxUtilsService) txUtilsService,
+        @Inject(TransactionUtilsService) txUtilsService,
         @Inject(TLogger) logger
     ) {
         this._config = config;
@@ -49,24 +49,21 @@ export class Wallet {
 
         senderUnspentTxOutputs = this.filterTxPoolTxs(senderUnspentTxOutputs, txPool);
 
-        const {
-            includedUnspentTxOuts,
-            leftOverCoinsAmount
-        } = this._searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
+        const searchResult = this._searchUnspentTxOutputsForAmount(amount, senderUnspentTxOutputs);
 
-        const newUnsignedTxInputs = this._uTxOutputsToUnsignedTxInputs(includedUnspentTxOuts);
+        const newUnsignedTxInputs = this._uTxOutputsToUnsignedTxInputs(searchResult.includedUnspentTxOuts);
 
         const newTxOuts = this._createTxOutputs(
             receiverPublicKey,
             senderPublicKey,
             amount,
-            leftOverCoinsAmount
+            searchResult.leftOverAmount
         );
 
         const newTx = new Transaction();
         newTx.inputs = newUnsignedTxInputs;
         newTx.outputs = newTxOuts;
-        newTx.id = this._txUtilsService.getTxId(newTx);
+        newTx.id = this._txUtilsService.calcTransactionId(newTx);
 
         this._signTxInputs(newTx, senderPrivateKey, uTxOutputs);
 
@@ -90,7 +87,7 @@ export class Wallet {
         const removableUTxOutputs = [];
         for (const unspentTxOut of unspentTxOuts) {
             const txIn = _.find(txIns, aTxIn => {
-                return aTxIn.txOutIndex === unspentTxOut.txOutIndex && aTxIn.txOutId === unspentTxOut.txOutId;
+                return aTxIn.txOutputIndex === unspentTxOut.txOutputIndex && aTxIn.txOutputId === unspentTxOut.txOutputId;
             });
 
             if (txIn !== undefined) {

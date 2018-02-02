@@ -5,6 +5,10 @@ export class MockLogger {
     log(message) {
     }
 
+    warn(...args){
+        
+    }
+
     warn(message) {
     }
 

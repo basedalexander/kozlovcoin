@@ -20,7 +20,7 @@ describe('Int tests', () => {
             .get('/')
             .set('Accept', 'application/json');
 
-            expect(response.body.ok).toBe(1);
+            expect(response.body.ok).toBe(true);
         });
     });
 });

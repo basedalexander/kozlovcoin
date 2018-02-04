@@ -20,6 +20,18 @@ export class UnspentTransactionOutputsUtilsService {
             .reduce((a, b) => a.concat(b), []);
     }
 
+    public updateUTxOutsWithNewTxs(existingUTxOuts: UnspentTransactionOutput[], newTransactions: Transaction[]): UnspentTransactionOutput[] {
+        const newUTxOutputs: UnspentTransactionOutput[] = this.txsToUnspentTxOuts(newTransactions);
+        const consumedUTxOuts: UnspentTransactionOutput[] = this.txsToConsumedTxOuts(newTransactions);
+
+        const processedExistingUTxOuts: UnspentTransactionOutput[] = this.filterOutConsumedUTxOuts(existingUTxOuts, consumedUTxOuts);
+        const processedNewUTxOuts: UnspentTransactionOutput[] = this.filterOutConsumedUTxOuts(newUTxOutputs, consumedUTxOuts);
+
+        const updatedExistingUTxOuts: UnspentTransactionOutput[] = processedExistingUTxOuts.concat(processedNewUTxOuts);
+
+        return updatedExistingUTxOuts;
+    }
+
     public txsToConsumedTxOuts(transactions: Transaction[]): UnspentTransactionOutput[] {
         const consumedTxOuts: UnspentTransactionOutput[] =
             transactions
@@ -37,7 +49,7 @@ export class UnspentTransactionOutputsUtilsService {
         return consumedTxOuts;
     }
 
-    public removeConsumedUTxOuts(
+    public filterOutConsumedUTxOuts(
         unspentTxOuts: UnspentTransactionOutput[],
         consumedUTxOuts: UnspentTransactionOutput[]
     ): UnspentTransactionOutput[] {

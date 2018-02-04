@@ -30,29 +30,21 @@ export class UnspentTransactionOutputs {
     }
 
     async init(blocks: IBlock[]): Promise<void> {
-        const uTxOuts: UnspentTransactionOutput[] = [];
+        let uTxOuts: UnspentTransactionOutput[] = [];
 
         blocks.forEach(block => {
-            this.updateWithNewTxs(uTxOuts, block.data);
+            uTxOuts = this.utils.updateUTxOutsWithNewTxs(uTxOuts, block.data);
         });
 
         await this.save(uTxOuts);
     }
 
-    async updateWithNewTxs(existingUTxOuts: UnspentTransactionOutput[], newTransactions: Transaction[]): Promise<void> {
-        const newUTxOutputs: UnspentTransactionOutput[] = this.utils.txsToUnspentTxOuts(newTransactions);
-        const consumedUTxOuts: UnspentTransactionOutput[] = this.utils.txsToConsumedTxOuts(newTransactions);
-
-        this.utils.removeConsumedUTxOuts(existingUTxOuts, consumedUTxOuts);
-        this.utils.addNewUTxOuts(existingUTxOuts, newUTxOutputs);
-    }
-
     private async update(newTransactions: Transaction[]): Promise<void> {
         const uTxOuts: UnspentTransactionOutput[] = await this.get();
 
-        this.updateWithNewTxs(uTxOuts, newTransactions);
+        const updatedUTxOuts: UnspentTransactionOutput[] = this.utils.updateUTxOutsWithNewTxs(uTxOuts, newTransactions);
 
-        this.save(uTxOuts);
+        this.save(updatedUTxOuts);
     }
 
     private async load(): Promise<UnspentTransactionOutput[]> {

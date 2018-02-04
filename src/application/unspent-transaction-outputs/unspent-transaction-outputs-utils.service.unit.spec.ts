@@ -91,8 +91,8 @@ describe('UnspentTransactionOutputsUtilsService', () => {
             expect(uTxOuts.length).toBe(1);
 
             expect(uTxOuts[0]).toMatchObject({
-               txOutputId: '',
-               txOutputIndex: 0
+                txOutputId: '',
+                txOutputIndex: 0
             });
         });
 
@@ -123,7 +123,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         });
     });
 
-    describe('removeConsumedTxOuts()', () => {
+    describe('filterOutConsumedUTxOuts()', () => {
         it('should return list of not consumed unspentTxOuts', () => {
             const uTxOuts: UnspentTransactionOutput[] = [
                 {
@@ -162,13 +162,13 @@ describe('UnspentTransactionOutputsUtilsService', () => {
             ];
 
             const unconsumedUnspentTxOuts: UnspentTransactionOutput[] =
-                service.removeConsumedUTxOuts(uTxOuts, consumedUnspentTxOuts);
+                service.filterOutConsumedUTxOuts(uTxOuts, consumedUnspentTxOuts);
 
             expect(unconsumedUnspentTxOuts.length).toBe(1);
 
             expect(unconsumedUnspentTxOuts[0]).toMatchObject({
                 txOutputId: '1',
-                txOutputIndex: 1,
+                txOutputIndex: 1
             });
         });
     });
@@ -216,6 +216,162 @@ describe('UnspentTransactionOutputsUtilsService', () => {
             expect(uTxOuts.length).toBe(5);
         });
     });
+
+    describe('updateUTxOutsWithNewTxs()', () => {
+        it('should return correctly updated uTxOuts', () => {
+
+            const txs: Transaction[] = [
+                createGenesisTx(),
+                {
+                    id: '2',
+                    inputs: [
+                        {
+                            txOutputId: '1',
+                            txOutputIndex: 0,
+                            signature: ''
+                        }
+                    ],
+                    outputs: [
+                        {
+                            address: '123',
+                            amount: 20
+                        },
+                        {
+                            address: '1337',
+                            amount: 30
+                        }
+                    ]
+                },
+                {
+                    id: '3',
+                    inputs: [
+                        {
+                            txOutputId: '2',
+                            txOutputIndex: 1,
+                            signature: ''
+                        }
+                    ],
+                    outputs: [
+                        {
+                            address: '1337',
+                            amount: 10
+                        },
+                        {
+                            address: '2000',
+                            amount: 20
+                        }
+                    ]
+                }
+            ];
+
+            const existingUTxOuts: UnspentTransactionOutput[] = service.updateUTxOutsWithNewTxs([], txs);
+
+            expect(existingUTxOuts.length).toBe(3);
+        });
+
+        it('should return correctly updated list of uTxOuts from already existing uTxOutputs', () => {
+            const txs: Transaction[] = [
+                createGenesisTx(),
+                {
+                    id: '2',
+                    inputs: [
+                        {
+                            txOutputId: '1',
+                            txOutputIndex: 0,
+                            signature: ''
+                        }
+                    ],
+                    outputs: [
+                        {
+                            address: '123',
+                            amount: 20
+                        },
+                        {
+                            address: '1337',
+                            amount: 30
+                        }
+                    ]
+                },
+                {
+                    id: '3',
+                    inputs: [
+                        {
+                            txOutputId: '2',
+                            txOutputIndex: 1,
+                            signature: ''
+                        }
+                    ],
+                    outputs: [
+                        {
+                            address: '1337',
+                            amount: 10
+                        },
+                        {
+                            address: '2000',
+                            amount: 20
+                        }
+                    ]
+                }
+            ];
+
+            let existingUTxOuts: UnspentTransactionOutput[] = service.updateUTxOutsWithNewTxs([], txs);
+
+            const newTransactions: Transaction[] = [
+                {
+                    id: '4',
+                    inputs: [
+                        {
+                            txOutputId: '2',
+                            txOutputIndex: 0,
+                            signature: ''
+                        }
+                    ],
+                    outputs: [
+                        {
+                            address: '123',
+                            amount: 10
+                        },
+                        {
+                            address: '5000',
+                            amount: 10
+                        }
+                    ]
+                }
+            ];
+
+            existingUTxOuts = service.updateUTxOutsWithNewTxs(existingUTxOuts, newTransactions);
+
+            expect(existingUTxOuts.length).toBe(4);
+
+            expect(existingUTxOuts[0]).toMatchObject({
+                address: '1337',
+                amount: 10,
+                txOutputId: '3',
+                txOutputIndex: 0
+            });
+
+            expect(existingUTxOuts[1]).toMatchObject({
+                address: '2000',
+                amount: 20,
+                txOutputId: '3',
+                txOutputIndex: 1
+            });
+
+            expect(existingUTxOuts[2]).toMatchObject({
+                address: '123',
+                amount: 10,
+                txOutputId: '4',
+                txOutputIndex: 0
+            });
+
+            expect(existingUTxOuts[3]).toMatchObject({
+                address: '5000',
+                amount: 10,
+                txOutputId: '4',
+                txOutputIndex: 1
+            });
+        });
+    });
 });
 
 const createGenesisTx = (): Transaction => {
@@ -227,7 +383,7 @@ const createGenesisTx = (): Transaction => {
 
 const createTxWith2Outputs = (): Transaction => {
     const inputs: TransactionInput[] = [
-            new TransactionInput('', 0, '')
+        new TransactionInput('', 0, '')
     ];
 
     const outputs: TransactionOutput[] = [

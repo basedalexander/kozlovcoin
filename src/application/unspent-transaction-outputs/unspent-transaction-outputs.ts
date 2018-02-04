@@ -1,17 +1,17 @@
-import { Component } from '@nestjs/common';
+import { Component, Inject } from '@nestjs/common';
 
 import { IBlock } from '../block/block.interface';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
-import { InMemoryStorage } from '../storage/in-memory-storage';
 import { Transaction } from '../transaction/classes/transaction';
 import { UnspentTransactionOutputsUtilsService } from './unspent-transaction-outputs-utils.service';
+import { IStorage, TStorage } from '../storage/storage.interface';
 
 @Component()
 export class UnspentTransactionOutputs {
     private FILE_NAME: string = 'utxoutputs.json';
 
     constructor(
-        private storage: InMemoryStorage, // todo use fs storage
+        @Inject(TStorage) private storage: IStorage,
         private utils: UnspentTransactionOutputsUtilsService
     ) {}
 

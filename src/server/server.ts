@@ -10,9 +10,7 @@ import { ApplicationModule } from '../application/application.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { configuration } from '../system/configuration';
 import { IConfiguration } from '../system/configuration.interface';
-import { consoleLogger } from '../system/logger/lib/console-logger';
 import { ILogger, TLogger } from '../system/logger/interfaces/logger.interface';
-import { SystemModule } from '../system/system.module';
 import { LoggerModule } from '../system/logger/lib/logger.module';
 
 export class Server implements IServer {
@@ -31,7 +29,7 @@ export class Server implements IServer {
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.app);
 
-        let systemModule  = this.nestApp.select(LoggerModule);
+        const systemModule  = this.nestApp.select(LoggerModule);
         this.logger = systemModule.get(TLogger);
 
         this.setupApiDocs(this.nestApp);
@@ -60,10 +58,9 @@ export class Server implements IServer {
 
     private setupApiDocs(nestApp: INestApplication): void {
         const options = new DocumentBuilder()
-            .setTitle('Cats example')
-            .setDescription('The cats API description')
+            .setTitle('Kozlovcoin blockchain API Docs')
+            .setDescription('')
             .setVersion('1.0')
-            .addTag('cats')
             .build();
 
         const document = SwaggerModule.createDocument(nestApp, options);

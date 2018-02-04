@@ -25,7 +25,7 @@ describe('Node REST API', () => {
                 expect(res.body.data instanceof Array).toBe(true);
             });
 
-            it('Should return array with one item', async() => {
+            it('Should return array with one item', async () => {
                 const res = await request(httpServer)
                     .get('/blocks')
                     .set('Accept', 'application/json');
@@ -36,17 +36,30 @@ describe('Node REST API', () => {
         });
     });
 
-    describe('/last_block', () => {
+    describe('/last-block', () => {
         describe('GET', () => {
             it('Should return the only block in the chain', async () => {
                 const res = await request(httpServer)
-                    .get('/last_block')
+                    .get('/last-block')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();
                 expect(res.body.data).toMatchObject({
                     index: 0
                 });
+            });
+        });
+    });
+
+    describe('/unspent-tx-outputs', () => {
+        describe('GET', () => {
+            it('Should return list of unspent transaction outputs', async () => {
+                const res = await request(httpServer)
+                    .get('/unspent-tx-outputs')
+                    .set('Accept', 'application/json');
+
+                expect(res.body.data).toBeTruthy();
+                expect(res.body.data.length).toBe(1);
             });
         });
     });

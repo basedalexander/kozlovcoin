@@ -1,9 +1,5 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-
-export class Block {
-    @ApiModelProperty()
-    index: number;
-}
+import { Block } from '../../block/block';
 
 export class GetBlocksResponseDTO {
     @ApiModelProperty({ type: Block, isArray: true })

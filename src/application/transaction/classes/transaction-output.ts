@@ -1,6 +1,17 @@
+import { ApiModelProperty } from '@nestjs/swagger';
+
 export class TransactionOutput {
+    @ApiModelProperty()
+    public address: string;
+
+    @ApiModelProperty()
+    public amount: number;
+
     constructor(
-        public address: string,
-        public amount: number
-    ) {}
+        address: string,
+        amount: number
+    ) {
+        this.address = address;
+        this.amount = amount;
+    }
 }

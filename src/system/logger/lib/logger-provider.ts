@@ -10,7 +10,7 @@ export const loggerProvider = {
         if (env.mode === 'local') {
             return consoleLogger;
         } else if (env.mode === 'test') {
-            return mockLogger();
+            return mockLogger;
         } else {
             return stagingLogger;
         }

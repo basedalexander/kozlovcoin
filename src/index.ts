@@ -1,7 +1,3 @@
-interface IDick {
-    a: string;
-}
+import { bootstrap } from './bootstrap';
 
-export const a: IDick = {
-    a: Date.now()
-};
+bootstrap();

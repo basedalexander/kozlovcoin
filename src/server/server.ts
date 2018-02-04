@@ -8,14 +8,21 @@ import { Express } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ApplicationModule } from '../application/application.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { IServerConfiguration } from '../configuration/configuration.interface';
+import { configuration } from '../system/configuration';
+import { IConfiguration } from '../system/configuration.interface';
+import { consoleLogger } from '../system/logger/lib/console-logger';
+import { ILogger, TLogger } from '../system/logger/interfaces/logger.interface';
+import { SystemModule } from '../system/system.module';
+import { LoggerModule } from '../system/logger/lib/logger.module';
 
 export class Server implements IServer {
     private app: Express;
     private nestApp: INestApplication;
+    private config: IConfiguration;
+    private logger: ILogger;
 
-    constructor(private config: IServerConfiguration) {
-
+    constructor() {
+        this.config = configuration;
     }
 
     public async init() {
@@ -23,15 +30,23 @@ export class Server implements IServer {
         this.setupMiddleware(this.app);
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.app);
+
+        let systemModule  = this.nestApp.select(LoggerModule);
+        this.logger = systemModule.get(TLogger);
+
         this.setupApiDocs(this.nestApp);
     }
 
     async start(): Promise<void> {
-        await this.nestApp.listen(this.config.port, this.config.host);
+        await this.nestApp.listen(this.config.server.port, this.config.server.host);
+
+        this.logger.info(`Server is listening on ${this.config.server.host}:${this.config.server.port}`);
     }
 
     async stop(): Promise<void> {
         this.nestApp.close();
+
+        this.logger.info(`Server is closed`);
     }
 
     public getHttpServerInstance(): Express {

@@ -17,7 +17,7 @@
     "unit": "jest --config=jest.unit.config.js",
     "unit-watch": "jest --config=jest.unit.config.js --watch",
     "int": "jest --config=jest.int.config.js",
-    "int-watch": "jest --config=jest.int.config.js --watch"
+    "int-watch": "ENV_MODE=test PORT=4000 jest --config=jest.int.config.js --watch"
   },
   "author": "",
   "license": "ISC",
@@ -28,10 +28,12 @@
     "@nestjs/swagger": "^1.1.4",
     "@nestjs/testing": "^4.5.5",
     "@nestjs/websockets": "^4.5.8",
+    "body-parser": "^1.18.2",
     "class-validator": "^0.8.1",
     "elliptic": "^6.4.0",
     "express": "^4.16.2",
     "lodash": "^4.17.4",
+    "mkdirp": "^0.5.1",
     "mkdirp-promise": "^5.0.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.6",

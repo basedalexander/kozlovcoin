@@ -2,6 +2,7 @@ import { Component } from '@nestjs/common';
 import { IBlock } from '../block/block.interface';
 import { Node } from './node';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
+import { Transaction } from '../transaction/classes/transaction';
 
 @Component()
 export class NodeManager {
@@ -19,5 +20,9 @@ export class NodeManager {
 
     async getUnspentTxOutputs(): Promise<UnspentTransactionOutput[]> {
         return this.node.getUnspentTxOutputs();
+    }
+
+    async getTxPool(): Promise<Transaction[]> {
+        return this.node.getTxPool();
     }
 }

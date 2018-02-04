@@ -63,4 +63,30 @@ describe('Node REST API', () => {
             });
         });
     });
+
+    describe('/tx-pool', () => {
+        describe('GET', () => {
+            it('Should return list of uncofirmed transactions from Transaction pool', async () => {
+                const res = await request(httpServer)
+                    .get('/tx-pool')
+                    .set('Accept', 'application/json');
+
+                expect(res.body.data).toBeTruthy();
+                expect(res.body.data.length).toBe(0);
+            });
+        });
+    });
+
+    xdescribe('/transaction', () => {
+        describe('POST', () => {
+            it('Should return success if transaction was added', async () => {
+                const res = await request(httpServer)
+                    .post('/transaction')
+                    .set('Accept', 'application/json')
+                    .send();
+
+                expect(res.body.success).toBe(true);
+            });
+        });
+    });
 });

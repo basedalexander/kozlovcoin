@@ -38,8 +38,6 @@ export class Node {
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
         this.txPoolUpdate = new EventEmitter();
-
-        this.init();
     }
 
     async addTx(newTx) {

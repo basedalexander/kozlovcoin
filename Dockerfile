@@ -4,12 +4,13 @@ RUN mkdir /kozlovcoin
 
 COPY config /kozlovcoin/config/
 COPY src /kozlovcoin/src/
-COPY swagger-ui /kozlovcoin/swagger-ui/
 
 COPY package.json /kozlovcoin/
-COPY jest.config.js /kozlovcoin/
-COPY .babelrc /kozlovcoin/
-COPY .gitignore /kozlovcoin/
+COPY jest.e2e.config.js /kozlovcoin/
+COPY jest.unit.config.js /kozlovcoin/
+COPY nodemon.json /kozlovcoin/
+COPY tsconfig.json /kozlovcoin/
+COPY tslint.json /kozlovcoin/
 
 RUN cd /kozlovcoin && npm install
 

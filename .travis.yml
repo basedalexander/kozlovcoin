@@ -14,6 +14,10 @@ script:
   - npm run e2e
   - npm run build
 
-  - docker build -t "$USER"/"$REPO" .
-  - docker run -d -p 127.0.0.1:80:3008 "$USER"/"$REPO"
+  - docker build -t thohoh/kozlovcoin .
+  - docker run -d -p 127.0.0.1:80:3008 -v /var/thohoh:/store --name kozlovcoin_container thohoh/kozlovcoin
   - docker ps -a
+  - docker exec kozlovcoin_container npm run lint
+  - docker exec kozlovcoin_container npm run unit
+  - docker exec kozlovcoin_container npm run e2e
+  - docker exec kozlovcoin_container npm run build

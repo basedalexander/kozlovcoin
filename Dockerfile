@@ -2,8 +2,11 @@ FROM node:8.2.1
 
 RUN mkdir /kozlovcoin
 
+VOLUME /store
+
 COPY config /kozlovcoin/config/
 COPY src /kozlovcoin/src/
+COPY tests /kozlovcoin/tests/
 
 COPY package.json /kozlovcoin/
 COPY jest.e2e.config.js /kozlovcoin/
@@ -18,4 +21,4 @@ EXPOSE 3008
 EXPOSE 6001
 
 WORKDIR /kozlovcoin
-CMD P2P_PEERS=$P2P_PEERS npm start
+CMD npm start

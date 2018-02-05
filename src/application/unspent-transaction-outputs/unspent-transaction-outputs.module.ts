@@ -19,7 +19,8 @@ import { FSStorage } from '../storage/fs-storage';
         }
     ],
     exports: [
-        UnspentTransactionOutputs
+        UnspentTransactionOutputs,
+        UnspentTransactionOutputsUtilsService
     ]
 })
 export class UnspentTransactionOutputsModule {

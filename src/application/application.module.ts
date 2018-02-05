@@ -3,12 +3,14 @@ import { LoggerMiddleware } from '../system/logger/lib/logger.middleware';
 import { SystemModule } from '../system/system.module';
 import { NodeModule } from './node/node.module';
 import { ApiModule } from './api/api.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
     imports: [
         SystemModule,
         NodeModule,
-        ApiModule
+        ApiModule,
+        WalletModule
     ]
 })
 export class ApplicationModule implements NestModule {

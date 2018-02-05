@@ -1,4 +1,6 @@
-export const hexToBinary = (hex) => {
+/*tslint:disable*/
+
+export const hexToBinary = (hex: string): string => {
     let ret = '';
     const lookupTable = {
         '0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100',
@@ -6,6 +8,7 @@ export const hexToBinary = (hex) => {
         'a': '1010', 'b': '1011', 'c': '1100', 'd': '1101',
         'e': '1110', 'f': '1111'
     };
+
     for (let i = 0; i < hex.length; i = i + 1) {
         if (lookupTable[hex[i]]) {
             ret += lookupTable[hex[i]];
@@ -17,7 +20,7 @@ export const hexToBinary = (hex) => {
 };
 
 export const toHexString = (byteArray) => {
-    return Array.from(byteArray, (byte) => {
+    return Array.from(byteArray, (byte: any) => {
         return ('0' + (byte & 0xFF).toString(16)).slice(-2);
     }).join('');
 };

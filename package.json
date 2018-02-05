@@ -6,8 +6,6 @@
   "scripts": {
     "prestart": "npm run -s build",
     "start": "node dist/index.js",
-    "node1": "SERVER_PORT=3005 P2P_PORT=6000 npm start",
-    "node2": "SERVER_PORT=3006 P2P_PORT=6001 P2P_PEERS=ws://localhost:6000 npm start",
     "dev": "nodemon",
     "clean": "rimraf dist",
     "build": "npm run clean && mkdir -p dist && tsc -p .",
@@ -30,6 +28,7 @@
     "@nestjs/websockets": "^4.5.8",
     "body-parser": "^1.18.2",
     "class-validator": "^0.8.1",
+    "cors": "^2.8.4",
     "elliptic": "^6.4.0",
     "express": "^4.16.2",
     "lodash": "^4.17.4",

@@ -7,7 +7,7 @@ import { ILogger, TLogger } from '../../system/logger/interfaces/logger.interfac
 import { Configuration } from '../../system/configuration';
 import { TransactionPool } from '../transaction-pool/transaction-pool';
 import { UnspentTransactionOutputs } from '../unspent-transaction-outputs/unspent-transaction-outputs';
-import { TransactionFactory } from '../transaction/transaction-factory';
+import { TransactionFactory } from '../transaction/transaction-factory/transaction-factory';
 import { Transaction } from '../transaction/classes/transaction';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
 import { BlockFactory } from '../block/block-factory';
@@ -60,7 +60,7 @@ export class Node {
 
     async init() {
         if (!await this.blockchain.isStored()) {
-            const genesisTx: Transaction = this.transactionFactory.createGenesis(this.config.creatorPublicAddress, this.COINBASE_AMOUNT);
+            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, this.COINBASE_AMOUNT);
             const genesisBlock = this.blockFactory.createGenesis(genesisTx);
 
             await this.blockchain.addBlock(genesisBlock);

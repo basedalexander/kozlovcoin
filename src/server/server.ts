@@ -1,7 +1,8 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 
 import { IServer } from './server.interface';
 import { Express } from 'express';
@@ -12,6 +13,8 @@ import { configuration } from '../system/configuration';
 import { IConfiguration } from '../system/configuration.interface';
 import { ILogger, TLogger } from '../system/logger/interfaces/logger.interface';
 import { LoggerModule } from '../system/logger/lib/logger.module';
+import { NestEnvironment } from '@nestjs/common/enums/nest-environment.enum';
+import { environment } from '../system/environment/environment';
 
 export class Server implements IServer {
     private app: Express;
@@ -27,21 +30,23 @@ export class Server implements IServer {
         this.app = express();
         this.setupMiddleware(this.app);
 
-        this.nestApp = await NestFactory.create(ApplicationModule, this.app);
+        if (environment.mode === 'test') {
+            Logger.setMode(NestEnvironment.TEST);
+        }
 
-        const systemModule  = this.nestApp.select(LoggerModule);
-        this.logger = systemModule.get(TLogger);
+        this.nestApp = await NestFactory.create(ApplicationModule, this.app);
+        this.logger  = this.nestApp.select(LoggerModule).get(TLogger);
 
         this.setupApiDocs(this.nestApp);
     }
 
-    async start(): Promise<void> {
+    public async start(): Promise<void> {
         await this.nestApp.listen(this.config.server.port, this.config.server.host);
 
         this.logger.info(`Server is listening on ${this.config.server.host}:${this.config.server.port}`);
     }
 
-    async stop(): Promise<void> {
+    public async stop(): Promise<void> {
         this.nestApp.close();
 
         this.logger.info(`Server is closed`);
@@ -52,6 +57,7 @@ export class Server implements IServer {
     }
 
     private setupMiddleware(app) {
+        app.use(cors());
         app.use(bodyParser.json({limit: '50mb'}));
         app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
     }

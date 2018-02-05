@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NodeController } from '../api/controllers/node.controller';
 import { BlockchainModule } from '../blockchain/blockchain.module';
-import { UnspentTransactionOutputs } from '../unspent-transaction-outputs/unspent-transaction-outputs';
 import { TransactionPoolModule } from '../transaction-pool/transaction-pool.module';
 import { BlockModule } from '../block/block.module';
 import { Node } from './node';
@@ -27,7 +26,8 @@ import { TransactionModule } from '../transaction/transaction.module';
         NodeController
     ],
     exports: [
-        NodeManager
+        NodeManager,
+        Node
     ]
 })
 export class NodeModule {

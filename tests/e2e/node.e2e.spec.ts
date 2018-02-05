@@ -76,17 +76,4 @@ describe('Node REST API', () => {
             });
         });
     });
-
-    xdescribe('/transaction', () => {
-        describe('POST', () => {
-            it('Should return success if transaction was added', async () => {
-                const res = await request(httpServer)
-                    .post('/transaction')
-                    .set('Accept', 'application/json')
-                    .send();
-
-                expect(res.body.success).toBe(true);
-            });
-        });
-    });
 });

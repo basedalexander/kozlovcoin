@@ -2,7 +2,7 @@ FROM node:8.2.1
 
 RUN mkdir /kozlovcoin
 
-VOLUME /store
+VOLUME /storage
 
 COPY config /kozlovcoin/config/
 COPY src /kozlovcoin/src/

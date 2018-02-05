@@ -17,7 +17,3 @@ script:
   - docker build -t "$USER"/"$REPO" .
   - docker run -d -p 127.0.0.1:80:3008 "$USER"/"$REPO"
   - docker ps -a
-
-  after_success:
-      - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-      - docker push "$USER"/"$REPO"

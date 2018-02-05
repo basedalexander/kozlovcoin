@@ -76,3 +76,5 @@ report-int-test
 report
 
 user-workspace
+coverage
+./storage

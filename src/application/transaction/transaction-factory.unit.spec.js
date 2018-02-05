@@ -1,4 +1,4 @@
-import {TransactionFactory} from "./transaction-factory";
+import {TransactionFactory} from "./transaction-factory/transaction-factory";
 
 describe('TransactionFactory', () => {
     let transactionFactory;
@@ -13,12 +13,12 @@ describe('TransactionFactory', () => {
         transactionFactory = new TransactionFactory(config, utils);
     });
 
-    xdescribe('createGenesis()', () => {
+    xdescribe('createCoinbase()', () => {
         describe('block attributes', () => {
             let tx;
 
             beforeEach(() => {
-                tx = transactionFactory.createGenesis();
+                tx = transactionFactory.createCoinbase();
             });
 
             it('should have 1 input transaction', () => {

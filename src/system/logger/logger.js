@@ -1,1 +1,0 @@
-export const TLogger = Symbol('Logger');

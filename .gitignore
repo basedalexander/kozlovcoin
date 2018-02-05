@@ -77,4 +77,4 @@ report
 
 user-workspace
 coverage
-storage
+./storage

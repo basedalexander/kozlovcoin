@@ -1,37 +1,27 @@
 language: node_js
-
 sudo: required
-
 node_js:
-  - 8.2.1
-
-env:
-  secure: WI6hJMcN2kwk4HN8NaZDOj3hjLIjXxPS0m56e9Oz2VV672eCWPzpD8QIxmq3NCYeR1Z1+XI4Bo5TSwYXRoO8dKUfSrubC+WgBQcDn4lcwN49gRX9eXwjMUujnpGNXumTOPvuNuL2bkcVmaoUL8GehPmQLpBwxYYMVWcVeYG73ySLvUTpOEFLFmgnQil6H25sI7GUchO4+HedJjCXqtBVQmeWgoSh87SmbOsdglzyBXHeUk9vmjieB6IbjVwu6/lj80CxmLI9z6VsjcZOOScM2QrCBOlzT3/bTlltPWGHTgYJ0gkXLrmiO/3ODtCAZKnuG8hJSrPaQIp3cpx8TRbrhtLyYdzb9SnwK7pRjl9wyKx+jwoCibJRbUqtNEFYkqbQvlKXuunyeswUfJVV9vxGEVx/tftiolD0auDZUDLjFCwwNiVTmHfktelAQCD+4ywKe3XQrZdFoBYzkWYyQkGXfCNG9T1FF+1Te/nNBvlvu0haeTKdF+yyikP+Joxu70EA1+3K26SUpuwA0yGjtceKN2Uda/lPD1UC+lcEYD+XVKXsdQKO0oAxYZtktQlUcBpvzz17Rp2TqtvSBb8TJYLGbpTZfEZqj1UZaPSPr9v0e+L2Un2mcxUK2tHeRzHw9PcyVQppubgrzMMDtJufg8iDe4Xf9oNH78nlXk9mRGTMwxs=
-
+- 8.2.1
 services:
-  - docker
-
+- docker
 script:
-    - npm install
-    - npm run lint
-    - npm run unit
-    - npm run e2e
-    - npm run build
-
-    - if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
-      docker build -t kozlovcoin .
-      docker images
-      docker tag kozlovcoin $DOCKERHUB_USERNAME/kozlovcoin:latest
-      docker push $DOCKERHUB_USERNAME/kozlovcoin:latest
-    fi
-
+- npm install
+- npm run lint
+- npm run unit
+- npm run e2e
+- npm run build
 after_success:
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD";
-      docker build -t kozlovcoin .
-      docker images
-      docker tag kozlovcoin $DOCKERHUB_USERNAME/kozlovcoin:latest
-      docker push $DOCKERHUB_USERNAME/kozlovcoin:latest
-    fi
-
+- if [ "$TRAVIS_BRANCH" == "master" ]; then
+  - docker login -e $DOCKERHUB_EMAIL -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD;
+  - docker build -t kozlovcoin .
+  - docker images docker tag kozlovcoin $DOCKERHUB_USERNAME/kozlovcoin:latest
+  - docker push $DOCKERHUB_USERNAME/kozlovcoin:latest
+  fi
+env:
+  gobal:
+    DOCKERHUB_EMAIL:
+      secure: ZW+ubVQU/XvgQLteeQGybAFMuyn0kPKuc7Rwof6N3jsyoZJDuIWATYplK4BlRHn5RPqSmkB9RmvlP0fSsqHE8prPfGqG9M05OrJgvyvisiK5s4swDztcAtbZif6HHXqVmjPa8vGDkyNywvaaglr4uqT8+XveL774uuMLp5k8K2UrLlxRkz4t3ZSuZj+YMP3wE2TPtH6ydoREDTC6bdsDq1Weuxpq6K4N83iS+wbyTsDUbs8/PjTgU725qucAD67VGmdcRq7SqX1Jai146XcjHT08rNxqVqT0G/+JhDOG2AQlxTfAbg2zjT/zcTPsjPIeNplNe4g000NR6M2/d+vNawf7GbwkfFmwIYGX6cv92qMWz+neZ7A0OR1ylEUxHjyL+ATTwXDCV4C2u/k3hE+V9Y/rrLuO7fKtsuFRyw58ZlWvTl4lANbKClu0JjxMELfaxlDdnsLWM5gIYQxX11xG4fncuAC91yy0rqcNHgmntRo9TBJh/+InWjXSaFLtwH981DLUl7upUnHYk5yvBMMrrdkTQm73NX1DW+tTDtQSzHnTn8MbS9Ew6T4sxt0IJuMwqwJtW8uss9qUJ2KIO/whtcba6mjP3rmEB4JwXfoHWk6xynhtAqlWSizkvyqQSGAZniC/7ttrAxWmKLCB7wsBUknQIl2QtpjAkTddyclWk5g=
+    DOCKERHUB_USERNAME:
+      secure: 2GEAedf0TgUvv4A16ZaZzWBSwybTg8XFaGQ7u3kkTwu3WTqbsk/5UURgX81aLQ/x7Q2mWdBwFpbvv9KC2cdQfQpx5LYI3Y1QuLUF/IAPZwO11aoIbuJPnH2vmzK+wlb9F3IpqzSKQqsYcEMdMbRPpU4DM9cHpylpizJRBMK/i9cQOynMJM2enkncrtG3CPvXzKdS8NXJYaG4JCWlLOgUMzlJ/j5l4ZlU1v/4t+/MdX/+S81h8LfRPjY6EO+zUeNoYiQZlknP+1auvDpmJWECVZQ/du23OAooRxwja9W2cDwhaGgPc9H5JC5ovjme6L5OMGcu00RKp1F29Oe6CdFB/LvcWmvhQVf1rAstmho2EDjeS8yxmJdr9m4nAxDEQfS1/0dDgTpyPMlqn5FxR5sWSTjUCKRZ40j6flaCZoX9fVCELIs6LoOKm+R+zntmUbiylujH3jA7vVRIZw3T0b7Ku+js1J7GBRB2mGH9ap5BczRpiOx4JdyOvvidbuExDRtcwAbTH1Iaf/m2AqIsD7+tco/Sm+HWviOKL1GgVpPx4i8h6W8zRMztcbotjUTLfLvvX6pd67LR1YNmwrZCKhz5lvk+w3RikiwpUAEp4PUHAFmVnVh6RDrwHh4UztVOiz82DCC4oQUIXktkkKtd+3Lw0Gg3MSscvqYrAxwRiYwPV0I=
+    DOCKERHUB_PASSWORD:
+      secure: ox0+dACxt347/zaJbnRy6Wd+inwacodAmWLFpiD4LsmEka5J/3HGXWAjHGjcmf+axBVFitD+s0MlV/ZECRo00Du7d6xEudMBRnsgDOoHgu8Mxfa2PoPa7QcCLM3aJ/JHv3t9NohyNJTckEuyVjCNhSKfvvTA1mxQGwT8wBCWSlyRiBh7D6wexD/P2InR7uSoJofJAZZIEBoGJnZHmSc59Qm0xMAAjazU3Okj82P0lulcmmdpb3DmJcPwlJJO/LbJ7PA0XmOsmUQLz3oG/NrtT7fX0vkMZj4Ydq+mUTVH9ZMiE/9DduqE/r3gXP6eMF1DICXaEtF4/7KFFSkv/p3WcgSX5Ir3VUPijDc3tbAPAAUmXFNq3GaM+G76TMNGjR5MUXLKQB9YtqSt2WjtA9nS1M9w5u5pPIrzVAFVKLtUxHiR4BkdWscSMIxBDK7ITveiiLqalpsrfjZtcx1NsFOq0sWOE1rYhvYmDw1Hp3cvQKSv0V21uUiKvANY27FV2dsLcB7oLCgk8W1rBiSBHqHHL6oP6Cf5Ltp8f3bvRSXiPojYDLx0VyW2va+ISt0NvFYg8y6OpPAd2XrZxL7CyzsLf5ZoJmB5DTOif8w9nmbLUDpe0wGIkQUKLeRyn79RulxbBcgsvBMxfKVVcNhZ2homF02/1IClYgIu7T3iVpxTOf4=

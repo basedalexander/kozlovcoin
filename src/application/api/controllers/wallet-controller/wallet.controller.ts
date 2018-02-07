@@ -1,15 +1,31 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Res } from '@nestjs/common';
+import {
+    Body, Controller, Get, HttpStatus, Param, Post, Res, UseFilters
+} from '@nestjs/common';
 import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
-import { WalletManager } from '../wallet.manager';
+
+import { WalletManager } from '../../../wallet/wallet.manager';
 import { MakeTransactionDto } from './dto/create-transaction.dto';
-import { Transaction } from '../../transaction/classes/transaction';
-import { KeyPair } from '../key-generator/key-pair';
+import { Transaction } from '../../../transaction/classes/transaction';
+import { KeyPair } from '../../../wallet/key-generator/key-pair';
 import { GetNewKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
 import { MakeTransactionResponseDto } from './dto/create-transaction-response.dto';
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';
 import { GetHistoryResponseDTO } from './dto/get-history-response.dto';
+import { ErrorResponseDTO } from '../node-controller/error-response.dto';
+import { HttpExceptionFilter } from '../../exceptions/http-exception-handler';
 
 @ApiUseTags('Kozlovcoin Wallet API')
+@ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: `Bad request`,
+    type: ErrorResponseDTO
+})
+@ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: `Internal server error.`,
+    type: ErrorResponseDTO
+})
+@UseFilters(new HttpExceptionFilter())
 @Controller('/wallet')
 export class WalletController {
     constructor(private manager: WalletManager) {}
@@ -22,7 +38,9 @@ export class WalletController {
     @Post('transaction')
     async makeTransaction(@Body() makeTransactioDto: MakeTransactionDto, @Res() res) {
 
-        const result: Transaction = await this.manager.createTransaction({
+        let result: Transaction;
+
+        result = await this.manager.createTransaction({
             recipientPublicKey: makeTransactioDto.recipientPublicKey,
             senderPublicKey: makeTransactioDto.senderPublicKey,
             senderPrivateKey: makeTransactioDto.senderPrivateKey,

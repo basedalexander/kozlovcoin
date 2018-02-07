@@ -1,23 +1,29 @@
+import { HttpStatus } from '@nestjs/common';
 import * as request from 'supertest';
-import { bootstrap } from '../../src/bootstrap';
 import * as rimraf from 'rimraf-promise';
 
 // tslint:disable
 const config = require('../../config/local-config.json');
 import { configuration } from "../../src/system/configuration";
+import { Server } from '../../src/server/server';
 
-describe('Wallet REST API', () => {
+describe('Wallet REST API', async () => {
     let server;
     let httpServer;
 
     beforeAll(async () => {
         await rimraf(configuration.storagePath);
-        server = await bootstrap();
+        server = new Server();
+
+        await server.init();
+
+        await server.start();
+
         httpServer = server.getHttpServerInstance();
     });
 
-    afterAll(async () => {
-        await server.stop();
+    beforeAll(async () => {
+       await server.stop();
     });
 
     describe('/wallet/balance/{publicKey}', () => {
@@ -40,26 +46,125 @@ describe('Wallet REST API', () => {
         });
     });
 
-    xdescribe('/wallet/transaction', () => {
+    describe('/wallet/transaction', () => {
         describe('POST', () => {
             it('Should add new transaction to the node and return it', async () => {
                 const res = await request(httpServer)
                     .post('/wallet/transaction')
                     .set('Accept', 'application/json')
                     .send({
-                        recipientPublicKey: "123",
+                        recipientPublicKey: '123',
                         senderPublicKey: config.creatorPublicAddress,
                         senderPrivateKey: config.creatorPrivateAddress,
                         amount: 20
                     });
 
                 expect(res.body.data).toBeTruthy();
-                expect(res.body.data instanceof Array).toBe(true);
+
+                expect(res.body.data.outputs[0].address).toBe(config.creatorPublicAddress);
+                expect(res.body.data.outputs[0].amount).toBe(30);
+
+                expect(res.body.data.outputs[1].address).toBe('123');
+                expect(res.body.data.outputs[1].amount).toBe(20);
             });
         });
+
+        it(`case #1 should return status 500 and error message if either of sender keys is wrong`, async () => {
+            const res = await request(httpServer)
+                .post('/wallet/transaction')
+                .set('Accept', 'application/json')
+                .send({
+                    recipientPublicKey: '123',
+                    senderPublicKey: config.creatorPublicAddress,
+                    senderPrivateKey: 'wrongKey',
+                    amount: 20
+                });
+
+            expect(res.body).toBeTruthy();
+            expect(res.status).toBe(500);
+            expect(typeof res.body.error).toBe('string');
+        });
+
+        it(`case #2 should return status 500 and error message if either of sender keys is wrong`, async () => {
+            const res = await request(httpServer)
+                .post('/wallet/transaction')
+                .set('Accept', 'application/json')
+                .send({
+                    recipientPublicKey: '123',
+                    senderPublicKey: 'bla',
+                    senderPrivateKey: config.creatorPrivateAddress,
+                    amount: 20
+                });
+
+            expect(res.body).toBeTruthy();
+            expect(res.status).toBe(500);
+            expect(typeof res.body.error).toBe('string');
+        });
+
+
+        describe('body validation', async () => {
+            it(`case #1 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                const res = await request(httpServer)
+                    .post('/wallet/transaction')
+                    .set('Accept', 'application/json')
+                    .send({
+                        recipientPublicKey: 123,
+                        senderPublicKey: config.creatorPublicAddress,
+                        senderPrivateKey: config.creatorPrivateAddress,
+                        amount: 20
+                    });
+
+                expect(res.body).toBeTruthy();
+                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            });
+
+            it(`case #2 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                const res = await request(httpServer)
+                    .post('/wallet/transaction')
+                    .set('Accept', 'application/json')
+                    .send({
+                        recipientPublicKey: '123',
+                        senderPublicKey: 123,
+                        senderPrivateKey: config.creatorPrivateAddress,
+                        amount: 20
+                    });
+
+                expect(res.body).toBeTruthy();
+                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            });
+
+            it(`case #3 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                const res = await request(httpServer)
+                    .post('/wallet/transaction')
+                    .set('Accept', 'application/json')
+                    .send({
+                        recipientPublicKey: '123',
+                        senderPublicKey: config.creatorPublicAddress,
+                        senderPrivateKey: 123,
+                        amount: 20
+                    });
+
+                expect(res.body).toBeTruthy();
+                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            });
+
+            it(`case #4 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                const res = await request(httpServer)
+                    .post('/wallet/transaction')
+                    .set('Accept', 'application/json')
+                    .send({
+                        recipientPublicKey: '123',
+                        senderPublicKey: config.creatorPublicAddress,
+                        senderPrivateKey: config.creatorPrivateAddress,
+                        amount: '234'
+                    });
+
+                expect(res.body).toBeTruthy();
+                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+            });
+        });
+
     });
-
-
 
     describe('/wallet/new-key-pair', () => {
         describe('GET', () => {

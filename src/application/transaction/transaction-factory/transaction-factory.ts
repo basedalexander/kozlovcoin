@@ -57,7 +57,7 @@ export class TransactionFactory {
         const newTransaction = new Transaction('', inputs, outputs);
         newTransaction.id = this.utils.calcTransactionId(newTransaction);
 
-        const txValid: boolean = this.utils.validateTx(newTransaction, params.senderPublicKey, params.uTxOuts);
+        const txValid: boolean = this.utils.validateTx(newTransaction, params.senderPrivateKey, params.uTxOuts);
         if (!txValid) {
             throw new Error(`Create new transaction Error: Not valid`);
         }

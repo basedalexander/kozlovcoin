@@ -23,7 +23,8 @@ export class Configuration implements IConfiguration {
         this.rootPath = path.join(__dirname, '../../', this.config.rootPath);
         this.server = {
             host: env.serverHost ? env.serverHost : this.config.server.host,
-            port: env.serverPort ?  env.serverPort : this.config.server.port
+            port: env.serverPort ?  env.serverPort : this.config.server.port,
+            apiDocsRoute: this.config.server.apiDocsRoute
         };
         this.p2p = {
             host: env.p2pHost ? env.p2pHost : this.config.p2p.host,

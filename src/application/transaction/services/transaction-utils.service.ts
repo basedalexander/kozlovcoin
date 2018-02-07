@@ -55,7 +55,14 @@ export class TransactionUtilsService {
         let result: number = amount;
 
         for (const uTxOutput of uTxOuts) {
-            result = result - uTxOutput.amount;
+            const outputAmount: number = uTxOutput.amount;
+
+            if (outputAmount > result) {
+                result = outputAmount - result;
+                break;
+            }
+
+            result = result - outputAmount;
 
             if (result <= 0) {
                 result = 0;

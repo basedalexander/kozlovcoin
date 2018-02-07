@@ -7,6 +7,7 @@ export interface IConfiguration {
 }
 
 export interface IServerConfiguration {
+    apiDocsRoute: string;
     host: string;
     port: number;
 }

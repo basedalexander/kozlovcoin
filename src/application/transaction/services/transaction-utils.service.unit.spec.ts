@@ -144,6 +144,23 @@ describe('TransactionUtilsService', () => {
 
             expect(result).toBe(0);
         });
+
+        it(`should return result of all outputs' amount minus provided amount`, () => {
+            const addr: string = '234';
+
+            const uTxOuts: UnspentTransactionOutput[] = [
+                {
+                    txOutputId: '',
+                    txOutputIndex: 0,
+                    amount: 50,
+                    address: '123'
+                }
+            ];
+
+            const result: number = service.getLeftOverAmount(uTxOuts, 30);
+
+            expect(result).toBe(20);
+        });
     });
 
     describe('uTxOutsToUnsignedTxInputs()', () => {

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { NodeController } from '../api/controllers/node.controller';
+import { NodeController } from '../api/controllers/node-controller/node.controller';
 import { BlockchainModule } from '../blockchain/blockchain.module';
 import { TransactionPoolModule } from '../transaction-pool/transaction-pool.module';
 import { BlockModule } from '../block/block.module';

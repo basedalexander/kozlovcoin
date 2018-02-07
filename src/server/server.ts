@@ -15,6 +15,8 @@ import { ILogger, TLogger } from '../system/logger/interfaces/logger.interface';
 import { LoggerModule } from '../system/logger/lib/logger.module';
 import { NestEnvironment } from '@nestjs/common/enums/nest-environment.enum';
 import { environment } from '../system/environment/environment';
+import { ValidationPipe } from '../application/api/validation/validation-pipe';
+import { HttpExceptionFilter } from '../application/api/exceptions/http-exception-handler';
 
 export class Server implements IServer {
     private app: Express;
@@ -35,6 +37,9 @@ export class Server implements IServer {
         }
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.app);
+        this.nestApp.useGlobalPipes(new ValidationPipe());
+        this.nestApp.useGlobalFilters(new HttpExceptionFilter());
+
         this.logger  = this.nestApp.select(LoggerModule).get(TLogger);
 
         this.setupApiDocs(this.nestApp);
@@ -47,9 +52,14 @@ export class Server implements IServer {
     }
 
     public async stop(): Promise<void> {
-        this.nestApp.close();
+        return new Promise<void>((resolve, reject) => {
+            this.nestApp.getHttpServer().close((arg) => {
+                this.nestApp.close();
+                this.logger.info(`Server is closed`);
+                resolve();
 
-        this.logger.info(`Server is closed`);
+            });
+        });
     }
 
     public getHttpServerInstance(): Express {
@@ -70,6 +80,6 @@ export class Server implements IServer {
             .build();
 
         const document = SwaggerModule.createDocument(nestApp, options);
-        SwaggerModule.setup('/api', nestApp, document);
+        SwaggerModule.setup(this.config.server.apiDocsRoute, nestApp, document);
     }
 }

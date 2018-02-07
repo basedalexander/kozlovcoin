@@ -1,16 +1,26 @@
 import * as request from 'supertest';
-import { bootstrap } from '../../src/bootstrap';
+import * as rimraf from 'rimraf-promise';
 
-describe('Node REST API', () => {
+import { configuration } from '../../src/system/configuration';
+import { Server } from '../../src/server/server';
+
+describe('Node REST API', async () => {
     let server;
     let httpServer;
 
     beforeAll(async () => {
-        server = await bootstrap();
+        await rimraf(configuration.storagePath);
+
+        server = new Server();
+
+        await server.init();
+
+        await server.start();
+
         httpServer = server.getHttpServerInstance();
     });
 
-    afterAll(async () => {
+    beforeAll(async () => {
         await server.stop();
     });
 

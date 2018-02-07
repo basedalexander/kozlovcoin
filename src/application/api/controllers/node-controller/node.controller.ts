@@ -1,15 +1,31 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import {  ApiResponse, ApiUseTags } from '@nestjs/swagger';
-import { GetBlocksResponseDTO } from '../dto/get-blocks-response.dto';
-import { NodeManager } from '../../node/node-manager';
-import { IBlock } from '../../block/block.interface';
-import { GetLastBlockResponseDTO } from '../dto/get-last-block-response.dto';
-import { GetUnspentTxOutputsResponseDto } from '../dto/get-unspent-tx-outputs-response.dto';
-import { UnspentTransactionOutput } from '../../transaction/classes/unspent-transaction-output';
-import { Transaction } from '../../transaction/classes/transaction';
-import { GetTransactionPoolResponseDto } from '../dto/get-transaction-pool-response.dto';
+import { GetBlocksResponseDTO } from './dto/get-blocks-response.dto';
+import { NodeManager } from '../../../node/node-manager';
+import { IBlock } from '../../../block/block.interface';
+import { GetLastBlockResponseDTO } from './dto/get-last-block-response.dto';
+import { GetUnspentTxOutputsResponseDto } from './dto/get-unspent-tx-outputs-response.dto';
+import { UnspentTransactionOutput } from '../../../transaction/classes/unspent-transaction-output';
+import { Transaction } from '../../../transaction/classes/transaction';
+import { GetTransactionPoolResponseDto } from './dto/get-transaction-pool-response.dto';
+import { ErrorResponseDTO } from './error-response.dto';
 
 @ApiUseTags('Node API')
+@ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: `Bad request data`,
+    type: ErrorResponseDTO
+})
+@ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: `Validation error`,
+    type: ErrorResponseDTO
+})
+@ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: `Internal server error.`,
+    type: ErrorResponseDTO
+})
 @Controller()
 export class NodeController {
     constructor(private nodeManager: NodeManager) {}

@@ -1,7 +1,6 @@
-dist: trusty
-sudo: required
+language: node_js
 
-language: generic
+sudo: required
 
 node_js:
   - 8.2.1
@@ -9,24 +8,19 @@ node_js:
 services:
   - docker
 
-jobs:
-  include:
-    - stage: Lint and test
-      script:
-        - npm install
-        - npm run lint
-        - npm run unit
-        - npm run e2e
-        - npm run build
+script:
+    - npm install
+    - npm run lint
+    - npm run unit
+    - npm run e2e
+    - npm run build
 
-      - stage: Build and push docker image
-        script:
-            - if [ "$TRAVIS_BRANCH" == "master" ]; then
-              docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
-              docker build -t kozlovcoin .
-              docker images
-              docker tag kozlovcoin $DOCKERHUB_USERNAME/kozlovcoin:latest
-              docker push $DOCKERHUB_USERNAME/kozlovcoin:latest
-            fi
+    - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+      docker build -t kozlovcoin .
+      docker images
+      docker tag kozlovcoin $DOCKERHUB_USERNAME/kozlovcoin:latest
+      docker push $DOCKERHUB_USERNAME/kozlovcoin:latest
+    fi
 env:
   secure: WI6hJMcN2kwk4HN8NaZDOj3hjLIjXxPS0m56e9Oz2VV672eCWPzpD8QIxmq3NCYeR1Z1+XI4Bo5TSwYXRoO8dKUfSrubC+WgBQcDn4lcwN49gRX9eXwjMUujnpGNXumTOPvuNuL2bkcVmaoUL8GehPmQLpBwxYYMVWcVeYG73ySLvUTpOEFLFmgnQil6H25sI7GUchO4+HedJjCXqtBVQmeWgoSh87SmbOsdglzyBXHeUk9vmjieB6IbjVwu6/lj80CxmLI9z6VsjcZOOScM2QrCBOlzT3/bTlltPWGHTgYJ0gkXLrmiO/3ODtCAZKnuG8hJSrPaQIp3cpx8TRbrhtLyYdzb9SnwK7pRjl9wyKx+jwoCibJRbUqtNEFYkqbQvlKXuunyeswUfJVV9vxGEVx/tftiolD0auDZUDLjFCwwNiVTmHfktelAQCD+4ywKe3XQrZdFoBYzkWYyQkGXfCNG9T1FF+1Te/nNBvlvu0haeTKdF+yyikP+Joxu70EA1+3K26SUpuwA0yGjtceKN2Uda/lPD1UC+lcEYD+XVKXsdQKO0oAxYZtktQlUcBpvzz17Rp2TqtvSBb8TJYLGbpTZfEZqj1UZaPSPr9v0e+L2Un2mcxUK2tHeRzHw9PcyVQppubgrzMMDtJufg8iDe4Xf9oNH78nlXk9mRGTMwxs=

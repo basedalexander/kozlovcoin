@@ -1,5 +1,3 @@
-const path = require('path');
-
 module.exports = {
     "transform": {
         ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
@@ -10,5 +8,6 @@ module.exports = {
         "js",
         "json"
       ],
-      "mapCoverage": true
+      "mapCoverage": true,
+    "testEnvironment": "node"
 };

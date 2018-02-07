@@ -41,7 +41,7 @@ export class Server implements IServer {
     }
 
     public async start(): Promise<void> {
-        await this.nestApp.listen(this.config.server.port, this.config.server.host);
+        await this.nestApp.listen(this.config.server.port);
 
         this.logger.info(`Server is listening on ${this.config.server.host}:${this.config.server.port}`);
     }

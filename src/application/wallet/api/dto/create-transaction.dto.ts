@@ -1,7 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger';
 import { ICreateTransactionParamsInterface } from '../../create-transaction-params.interface';
 
-export class CreateTransactionDto implements ICreateTransactionParamsInterface {
+export class MakeTransactionDto implements ICreateTransactionParamsInterface {
 
     @ApiModelProperty()
     recipientPublicKey: string;

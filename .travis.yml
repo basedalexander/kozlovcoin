@@ -1,5 +1,4 @@
-language: node_js
-
+dist: trusty
 sudo: required
 
 node_js:
@@ -8,13 +7,11 @@ node_js:
 services:
   - docker
 
-install:
-  - npm install
-
 jobs:
   include:
     - stage: Lint and test
       script:
+        - npm install
         - npm run lint
         - npm run unit
         - npm run e2e

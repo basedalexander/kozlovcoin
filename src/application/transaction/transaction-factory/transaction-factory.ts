@@ -28,8 +28,8 @@ export class TransactionFactory {
     }
 
     public async create(params: ICreateTransactionParams): Promise<Transaction> {
-        let senderUTxOuts: UnspentTransactionOutput[] =
-            this.utils.getUTxOutsForAddress(params.senderPublicKey, params.uTxOuts);
+        let senderUTxOuts: UnspentTransactionOutput[] = this.utils
+            .getUTxOutsForAddress(params.senderPublicKey, params.uTxOuts);
 
         senderUTxOuts = this.uTxOutsUtils.updateUTxOutsWithNewTxs(senderUTxOuts, params.txPool);
 
@@ -57,7 +57,7 @@ export class TransactionFactory {
         const newTransaction = new Transaction('', inputs, outputs);
         newTransaction.id = this.utils.calcTransactionId(newTransaction);
 
-        const txValid: boolean = this.utils.validateTx(newTransaction, params.senderPrivateKey, params.uTxOuts);
+        const txValid: boolean = this.utils.validateTxInputs(newTransaction, params.senderPrivateKey, params.uTxOuts);
         if (!txValid) {
             throw new Error(`Create new transaction Error: Not valid`);
         }

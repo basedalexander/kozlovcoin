@@ -13,7 +13,6 @@ npm start
 ### Or with docker
 ```
 docker run -d -p 3008:3008 --name kozlovcoin thohoh/kozlovcoin
-
 ```
 
 

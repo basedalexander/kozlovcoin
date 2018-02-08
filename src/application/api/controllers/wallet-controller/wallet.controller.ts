@@ -6,7 +6,7 @@ import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { WalletManager } from '../../../wallet/wallet.manager';
 import { MakeTransactionDto } from './dto/create-transaction.dto';
 import { Transaction } from '../../../transaction/classes/transaction';
-import { KeyPair } from '../../../wallet/key-generator/key-pair';
+import { KeyPair } from '../../../crypto/key-pair';
 import { GetNewKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
 import { MakeTransactionResponseDto } from './dto/create-transaction-response.dto';
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';

@@ -1,5 +1,5 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { KeyPair } from '../../../../wallet/key-generator/key-pair';
+import { KeyPair } from '../../../../crypto/key-pair';
 
 export class GetNewKeyPairResponseDTO {
     @ApiModelProperty({ type: KeyPair })

@@ -48,122 +48,124 @@ describe('Wallet REST API', async () => {
 
     describe('/wallet/transaction', () => {
         describe('POST', () => {
-            it('Should add new transaction to the node and return it', async () => {
-                const res = await request(httpServer)
-                    .post('/wallet/transaction')
-                    .set('Accept', 'application/json')
-                    .send({
-                        recipientPublicKey: '123',
-                        senderPublicKey: config.creatorPublicAddress,
-                        senderPrivateKey: config.creatorPrivateAddress,
-                        amount: 20
-                    });
+            describe('Valid request', async () => {
+                it('Should add new transaction to the node and return it', async () => {
+                    const res = await request(httpServer)
+                        .post('/wallet/transaction')
+                        .set('Accept', 'application/json')
+                        .send({
+                            recipientPublicKey: '123',
+                            senderPublicKey: config.creatorPublicAddress,
+                            senderPrivateKey: config.creatorPrivateAddress,
+                            amount: 20
+                        });
 
-                expect(res.body.data).toBeTruthy();
+                    expect(res.body.data).toBeTruthy();
 
-                expect(res.body.data.outputs[0].address).toBe(config.creatorPublicAddress);
-                expect(res.body.data.outputs[0].amount).toBe(30);
+                    expect(res.body.data.outputs[0].address).toBe(config.creatorPublicAddress);
+                    expect(res.body.data.outputs[0].amount).toBe(30);
 
-                expect(res.body.data.outputs[1].address).toBe('123');
-                expect(res.body.data.outputs[1].amount).toBe(20);
+                    expect(res.body.data.outputs[1].address).toBe('123');
+                    expect(res.body.data.outputs[1].amount).toBe(20);
+                });
             });
-        });
 
-        it(`case #1 should return status 500 and error message if either of sender keys is wrong`, async () => {
-            const res = await request(httpServer)
-                .post('/wallet/transaction')
-                .set('Accept', 'application/json')
-                .send({
-                    recipientPublicKey: '123',
-                    senderPublicKey: config.creatorPublicAddress,
-                    senderPrivateKey: 'wrongKey',
-                    amount: 20
+            describe('Errors', async () => {
+                it(`case #1 should return status 500 and error message if either of sender keys is wrong`, async () => {
+                    const res = await request(httpServer)
+                        .post('/wallet/transaction')
+                        .set('Accept', 'application/json')
+                        .send({
+                            recipientPublicKey: '123',
+                            senderPublicKey: config.creatorPublicAddress,
+                            senderPrivateKey: 'wrongKey',
+                            amount: 20
+                        });
+
+                    expect(res.body).toBeTruthy();
+                    expect(res.status).toBe(500);
+                    expect(typeof res.body.error).toBe('string');
                 });
 
-            expect(res.body).toBeTruthy();
-            expect(res.status).toBe(500);
-            expect(typeof res.body.error).toBe('string');
-        });
+                it(`case #2 should return status 500 and error message if either of sender keys is wrong`, async () => {
+                    const res = await request(httpServer)
+                        .post('/wallet/transaction')
+                        .set('Accept', 'application/json')
+                        .send({
+                            recipientPublicKey: '123',
+                            senderPublicKey: 'bla',
+                            senderPrivateKey: config.creatorPrivateAddress,
+                            amount: 20
+                        });
 
-        it(`case #2 should return status 500 and error message if either of sender keys is wrong`, async () => {
-            const res = await request(httpServer)
-                .post('/wallet/transaction')
-                .set('Accept', 'application/json')
-                .send({
-                    recipientPublicKey: '123',
-                    senderPublicKey: 'bla',
-                    senderPrivateKey: config.creatorPrivateAddress,
-                    amount: 20
+                    expect(res.body).toBeTruthy();
+                    expect(res.status).toBe(500);
+                    expect(typeof res.body.error).toBe('string');
                 });
 
-            expect(res.body).toBeTruthy();
-            expect(res.status).toBe(500);
-            expect(typeof res.body.error).toBe('string');
-        });
+                describe('body validation', async () => {
+                    it(`case #1 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                        const res = await request(httpServer)
+                            .post('/wallet/transaction')
+                            .set('Accept', 'application/json')
+                            .send({
+                                recipientPublicKey: 123,
+                                senderPublicKey: config.creatorPublicAddress,
+                                senderPrivateKey: config.creatorPrivateAddress,
+                                amount: 20
+                            });
 
-
-        describe('body validation', async () => {
-            it(`case #1 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
-                const res = await request(httpServer)
-                    .post('/wallet/transaction')
-                    .set('Accept', 'application/json')
-                    .send({
-                        recipientPublicKey: 123,
-                        senderPublicKey: config.creatorPublicAddress,
-                        senderPrivateKey: config.creatorPrivateAddress,
-                        amount: 20
+                        expect(res.body).toBeTruthy();
+                        expect(res.status).toBe(HttpStatus.BAD_REQUEST);
                     });
 
-                expect(res.body).toBeTruthy();
-                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-            });
+                    it(`case #2 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                        const res = await request(httpServer)
+                            .post('/wallet/transaction')
+                            .set('Accept', 'application/json')
+                            .send({
+                                recipientPublicKey: '123',
+                                senderPublicKey: 123,
+                                senderPrivateKey: config.creatorPrivateAddress,
+                                amount: 20
+                            });
 
-            it(`case #2 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
-                const res = await request(httpServer)
-                    .post('/wallet/transaction')
-                    .set('Accept', 'application/json')
-                    .send({
-                        recipientPublicKey: '123',
-                        senderPublicKey: 123,
-                        senderPrivateKey: config.creatorPrivateAddress,
-                        amount: 20
+                        expect(res.body).toBeTruthy();
+                        expect(res.status).toBe(HttpStatus.BAD_REQUEST);
                     });
 
-                expect(res.body).toBeTruthy();
-                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-            });
+                    it(`case #3 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                        const res = await request(httpServer)
+                            .post('/wallet/transaction')
+                            .set('Accept', 'application/json')
+                            .send({
+                                recipientPublicKey: '123',
+                                senderPublicKey: config.creatorPublicAddress,
+                                senderPrivateKey: 123,
+                                amount: 20
+                            });
 
-            it(`case #3 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
-                const res = await request(httpServer)
-                    .post('/wallet/transaction')
-                    .set('Accept', 'application/json')
-                    .send({
-                        recipientPublicKey: '123',
-                        senderPublicKey: config.creatorPublicAddress,
-                        senderPrivateKey: 123,
-                        amount: 20
+                        expect(res.body).toBeTruthy();
+                        expect(res.status).toBe(HttpStatus.BAD_REQUEST);
                     });
 
-                expect(res.body).toBeTruthy();
-                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
-            });
+                    it(`case #4 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
+                        const res = await request(httpServer)
+                            .post('/wallet/transaction')
+                            .set('Accept', 'application/json')
+                            .send({
+                                recipientPublicKey: '123',
+                                senderPublicKey: config.creatorPublicAddress,
+                                senderPrivateKey: config.creatorPrivateAddress,
+                                amount: '234'
+                            });
 
-            it(`case #4 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
-                const res = await request(httpServer)
-                    .post('/wallet/transaction')
-                    .set('Accept', 'application/json')
-                    .send({
-                        recipientPublicKey: '123',
-                        senderPublicKey: config.creatorPublicAddress,
-                        senderPrivateKey: config.creatorPrivateAddress,
-                        amount: '234'
+                        expect(res.body).toBeTruthy();
+                        expect(res.status).toBe(HttpStatus.BAD_REQUEST);
                     });
-
-                expect(res.body).toBeTruthy();
-                expect(res.status).toBe(HttpStatus.BAD_REQUEST);
+                });
             });
         });
-
     });
 
     describe('/wallet/new-key-pair', () => {

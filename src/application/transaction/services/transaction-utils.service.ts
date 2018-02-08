@@ -1,13 +1,10 @@
 import { Component, Inject } from '@nestjs/common';
 
-import * as ecdsa from 'elliptic';
-
 import { Transaction } from '../classes/transaction';
 import { CryptoService } from '../../crypto/crypto.service';
 import { TransactionInput } from '../classes/transaction-input';
 import { UnspentTransactionOutput } from '../classes/unspent-transaction-output';
 import { ILogger, TLogger } from '../../../system/logger/interfaces/logger.interface';
-import { toHexString } from '../../../lib/utils';
 
 @Component()
 export class TransactionUtilsService {
@@ -81,7 +78,7 @@ export class TransactionUtilsService {
         return uTxOuts.map(uTxOutput => this.uTxOutToUnsignedTxInput(uTxOutput));
     }
 
-    public validateTx(tx: Transaction, privateKey: string, uTxOuts: UnspentTransactionOutput[]): boolean {
+    public validateTxInputs(tx: Transaction, privateKey: string, uTxOuts: UnspentTransactionOutput[]): boolean {
         return tx.inputs.every(txInput => {
             return this.validateTxInput(txInput, privateKey, uTxOuts);
         });
@@ -94,7 +91,7 @@ export class TransactionUtilsService {
     }
 
     private getSignatureForTxInput(tx: Transaction, txInput: TransactionInput, privateKey: string, uTxOuts: UnspentTransactionOutput[]): string {
-        return this.signData(tx.id, privateKey);
+        return this.crypto.signData(tx.id, privateKey);
     }
 
     private validateTxInput(txInput: TransactionInput, privateKey: string, uTxOuts: UnspentTransactionOutput[]): boolean {
@@ -105,21 +102,12 @@ export class TransactionUtilsService {
             return false;
         }
 
-        if (this.getPublicKey(privateKey) !== referencedUTxOut.address) {
+        if (this.crypto.privateToPublic(privateKey) !== referencedUTxOut.address) {
             this.logger.error(`Signing tx input error: private key does not match refferenced output's address`);
             return false;
         }
 
         return true;
-    }
-
-    private signData(data: string, privateKey: string): string {
-        const ec = new ecdsa.ec('secp256k1'); // todo encapsulate ec
-
-        const key = ec.keyFromPrivate(privateKey, 'hex');
-        const signature = toHexString(key.sign(data).toDER());
-
-        return signature;
     }
 
     private findUTxOutByTxIn(txInput: TransactionInput, uTxOuts: UnspentTransactionOutput[]): UnspentTransactionOutput {
@@ -135,15 +123,5 @@ export class TransactionUtilsService {
             uTxOutput.txOutputIndex,
             ''
         );
-    }
-
-    // todo move to key service
-    private getPublicKey(privateKey: string) {
-        const ec = new ecdsa.ec('secp256k1');
-
-        return ec
-            .keyFromPrivate(privateKey, 'hex')
-            .getPublic()
-            .encode('hex');
     }
 }

@@ -32,7 +32,7 @@ export class ResponseTxPoolP2PMessageHandler {
         }
 
         receivedTransactions.forEach(async transaction => {
-            await this._node.addTx(transaction);
+            await this._node.addTransaction(transaction);
         });
     }
 }

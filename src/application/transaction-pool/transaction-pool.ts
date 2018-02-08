@@ -4,7 +4,13 @@ import { Transaction } from '../transaction/classes/transaction';
 
 @Component()
 export class TransactionPool {
+    private transactions: Transaction[] = [];
+
+    public async addTransaction(tx: Transaction): Promise<void> {
+        this.transactions.push(tx);
+    }
+
     async get(): Promise<Transaction[]> {
-        return []; // todo
+        return this.transactions;
     }
 }

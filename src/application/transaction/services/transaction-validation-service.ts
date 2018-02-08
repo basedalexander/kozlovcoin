@@ -42,7 +42,23 @@ export class TransactionValidationService {
     }
 
     validateNewAgainstExistingTransactions(newTx: Transaction, existingTransactions: Transaction[]): boolean {
-        return true;
+        if (existingTransactions.length === 0) {
+            return true;
+        }
+
+        const allInputs: TransactionInput[] = existingTransactions
+                .map(tx => tx.inputs)
+                .reduce((a, b) => a.concat(b), []);
+
+        const newTxInputsAreNew: boolean = newTx.inputs.every(txInput => {
+            const txInputFound: boolean = !!allInputs.find(existingInput => {
+                return (txInput.txOutputIndex === existingInput.txOutputIndex) && (txInput.txOutputId === existingInput.txOutputId);
+            });
+
+            return !txInputFound;
+        });
+
+        return newTxInputsAreNew;
     }
 
     validateTxInputs(tx: Transaction, uTxOuts: UnspentTransactionOutput[]): boolean {

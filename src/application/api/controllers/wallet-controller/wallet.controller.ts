@@ -6,13 +6,13 @@ import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { WalletManager } from '../../../wallet/wallet.manager';
 import { MakeTransactionDto } from './dto/create-transaction.dto';
 import { Transaction } from '../../../transaction/classes/transaction';
-import { KeyPair } from '../../../crypto/key-pair';
 import { GetNewKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
 import { MakeTransactionResponseDto } from './dto/create-transaction-response.dto';
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';
 import { GetHistoryResponseDTO } from './dto/get-history-response.dto';
 import { ErrorResponseDTO } from '../node-controller/error-response.dto';
 import { HttpExceptionFilter } from '../../exceptions/http-exception-handler';
+import { KeyPair } from '../../../crypto/key-pair';
 
 @ApiUseTags('Kozlovcoin Wallet API')
 @ApiResponse({

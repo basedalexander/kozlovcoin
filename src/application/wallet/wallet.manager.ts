@@ -4,8 +4,8 @@ import { TransactionFactory } from '../transaction/transaction-factory/transacti
 import { Node } from '../node/node';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
 import { ICreateTransactionParamsInterface } from './create-transaction-params.interface';
-import { KeyPair } from '../crypto/key-pair';
 import { CryptoService } from '../crypto/crypto.service';
+import { KeyPair } from '../crypto/key-pair';
 
 @Component()
 export class WalletManager {

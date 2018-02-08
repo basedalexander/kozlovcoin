@@ -48,24 +48,28 @@ describe('Wallet REST API', async () => {
 
     describe('/wallet/transaction', () => {
         describe('POST', () => {
+
+            const recipientPublicKey: string = "0472d73e4d7d8770710ae2c2d1e6f4d837b4b94582ab723dbb725afdfd9ed630e9e6c51a4f89c7d12ce24ad385e192bdb5e1cc8f059da23536a685020fc18e5ea8";
+
             describe('Valid request', async () => {
                 it('Should add new transaction to the node and return it', async () => {
                     const res = await request(httpServer)
                         .post('/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
-                            recipientPublicKey: '123',
+                            recipientPublicKey: recipientPublicKey,
                             senderPublicKey: config.creatorPublicAddress,
                             senderPrivateKey: config.creatorPrivateAddress,
                             amount: 20
                         });
 
-                    expect(res.body.data).toBeTruthy();
+                    expect(res.status).toBe(HttpStatus.OK);
+                    expect(res.body).toBeTruthy();
 
                     expect(res.body.data.outputs[0].address).toBe(config.creatorPublicAddress);
                     expect(res.body.data.outputs[0].amount).toBe(30);
 
-                    expect(res.body.data.outputs[1].address).toBe('123');
+                    expect(res.body.data.outputs[1].address).toBe(recipientPublicKey);
                     expect(res.body.data.outputs[1].amount).toBe(20);
                 });
             });
@@ -76,7 +80,7 @@ describe('Wallet REST API', async () => {
                         .post('/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
-                            recipientPublicKey: '123',
+                            recipientPublicKey: recipientPublicKey,
                             senderPublicKey: config.creatorPublicAddress,
                             senderPrivateKey: 'wrongKey',
                             amount: 20
@@ -92,7 +96,7 @@ describe('Wallet REST API', async () => {
                         .post('/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
-                            recipientPublicKey: '123',
+                            recipientPublicKey: recipientPublicKey,
                             senderPublicKey: 'bla',
                             senderPrivateKey: config.creatorPrivateAddress,
                             amount: 20

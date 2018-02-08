@@ -36,11 +36,11 @@ export class Node {
         this.txPoolUpdate = new EventEmitter();
     }
 
-    async addTransaction(tx: Transaction) {
+    async addTransaction(tx: Transaction): Promise<void> {
         const uTxOutputs = await this.getUnspentTxOutputs();
-        const result = await this.transactionPool.addTransaction(tx);
-        const pool = await this.getTxPool();
+        const result = await this.transactionPool.addTransaction(tx, uTxOutputs);
 
+        const pool = await this.getTxPool();
         this.txPoolUpdate.emit(pool);
     }
 

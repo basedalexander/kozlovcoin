@@ -5,8 +5,8 @@ import { TransactionInput } from '../classes/transaction-input';
 import { MockLogger } from '../../../system/logger/lib/mock-logger';
 
 describe('TransactionUtilsService', () => {
-    const crypto = new CryptoService();
     const logger = new MockLogger();
+    const crypto = new CryptoService(logger);
     const service = new TransactionUtilsService(crypto, logger);
 
     describe('getUTxOutsForAddress()', () => {
@@ -77,7 +77,7 @@ describe('TransactionUtilsService', () => {
         });
     });
 
-    describe('searchUTxOutsForAmount()', () => {
+    describe('findUTxOutsForAmount()', () => {
         it('should return list of uTxOuts sum amount of which is bigger or equal to the amount requested', () => {
             const addr: string = '234';
 
@@ -102,7 +102,7 @@ describe('TransactionUtilsService', () => {
                 }
             ];
 
-            const result: UnspentTransactionOutput[] = service.searchUTxOutsForAmount(uTxOuts, 20);
+            const result: UnspentTransactionOutput[] = service.findUTxOutsForAmount(uTxOuts, 20);
 
             expect(result.length).toBe(1);
 
@@ -163,7 +163,7 @@ describe('TransactionUtilsService', () => {
         });
     });
 
-    describe('uTxOutsToUnsignedTxInputs()', () => {
+    describe('convertUTxOutsToUnsignedTxInputs()', () => {
         it('should return correct txInputs converted from uTxOuts', () => {
             const uTxOuts: UnspentTransactionOutput[] = [
                 {
@@ -186,7 +186,7 @@ describe('TransactionUtilsService', () => {
                 }
             ];
 
-            const unsignedInputs: TransactionInput[] = service.uTxOutsToUnsignedTxInputs(uTxOuts);
+            const unsignedInputs: TransactionInput[] = service.convertUTxOutsToUnsignedTxInputs(uTxOuts);
 
             expect(unsignedInputs.length).toBe(3);
         });

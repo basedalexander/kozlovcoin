@@ -3,6 +3,7 @@ import { TransactionUtilsService } from './services/transaction-utils.service';
 import { TransactionFactory } from './transaction-factory/transaction-factory';
 import { CryptoModule } from '../crypto/crypto.module';
 import { UnspentTransactionOutputsModule } from '../unspent-transaction-outputs/unspent-transaction-outputs.module';
+import { TransactionValidationService } from './services/transaction-validation-service';
 
 @Module({
     imports: [
@@ -11,10 +12,12 @@ import { UnspentTransactionOutputsModule } from '../unspent-transaction-outputs/
     ],
     components: [
         TransactionUtilsService,
-        TransactionFactory
+        TransactionFactory,
+        TransactionValidationService
     ],
     exports: [
-        TransactionFactory
+        TransactionFactory,
+        TransactionValidationService
     ]
 })
 export class TransactionModule {

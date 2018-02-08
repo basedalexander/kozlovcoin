@@ -28,7 +28,7 @@ export class TransactionUtilsService {
         return this.crypto.createSHA256Hash(id);
     }
 
-    public searchUTxOutsForAmount(uTxOuts: UnspentTransactionOutput[], amount: number): UnspentTransactionOutput[] {
+    public findUTxOutsForAmount(uTxOuts: UnspentTransactionOutput[], amount: number): UnspentTransactionOutput[] {
         let currentAmount = 0;
         let includedUTxOutputs = [];
 
@@ -70,44 +70,40 @@ export class TransactionUtilsService {
         return result;
     }
 
+    public getTotalInputAmount(tx: Transaction, uTxOuts: UnspentTransactionOutput[]): number {
+        const inputAmounts: number[] = tx.inputs
+            .map(txInput => this.getTxInputAmount(txInput, uTxOuts));
+
+        const total: number = inputAmounts.reduce((a, b) => (a + b), 0);
+
+        return total;
+    }
+
+    public getTxInputAmount(txInput: TransactionInput, uTxOuts: UnspentTransactionOutput[]): number {
+        const referencedTxOutput: UnspentTransactionOutput = this.findUTxOutByTxIn(txInput, uTxOuts);
+
+        return referencedTxOutput.amount;
+    }
+
+    public getTotalOutputAmount(tx: Transaction): number {
+        const outputAmounts: number[] = tx.outputs.map(txOut => txOut.amount);
+        const total: number = outputAmounts.reduce((a, b) => (a + b), 0);
+
+        return total;
+    }
+
     public getUTxOutsForAddress(address: string, uTxOuts: UnspentTransactionOutput[]): UnspentTransactionOutput[] {
         return uTxOuts.filter(tx => tx.address === address);
     }
 
-    public uTxOutsToUnsignedTxInputs(uTxOuts: UnspentTransactionOutput[]): TransactionInput[] {
+    public convertUTxOutsToUnsignedTxInputs(uTxOuts: UnspentTransactionOutput[]): TransactionInput[] {
         return uTxOuts.map(uTxOutput => this.uTxOutToUnsignedTxInput(uTxOutput));
-    }
-
-    public validateTxInputs(tx: Transaction, privateKey: string, uTxOuts: UnspentTransactionOutput[]): boolean {
-        return tx.inputs.every(txInput => {
-            return this.validateTxInput(txInput, privateKey, uTxOuts);
-        });
     }
 
     public signTxInputs(tx: Transaction, privateKey: string, uTxOuts: UnspentTransactionOutput[]): void {
         tx.inputs.forEach(txInput => {
-            txInput.signature = this.getSignatureForTxInput(tx, txInput, privateKey, uTxOuts);
+            txInput.signature = this.crypto.signMessage(tx.id, privateKey);
         });
-    }
-
-    private getSignatureForTxInput(tx: Transaction, txInput: TransactionInput, privateKey: string, uTxOuts: UnspentTransactionOutput[]): string {
-        return this.crypto.signData(tx.id, privateKey);
-    }
-
-    private validateTxInput(txInput: TransactionInput, privateKey: string, uTxOuts: UnspentTransactionOutput[]): boolean {
-        const referencedUTxOut: UnspentTransactionOutput = this.findUTxOutByTxIn(txInput, uTxOuts);
-
-        if (!referencedUTxOut) {
-            this.logger.error(`Signing tx input error: could not find referenced txOut`);
-            return false;
-        }
-
-        if (this.crypto.privateToPublic(privateKey) !== referencedUTxOut.address) {
-            this.logger.error(`Signing tx input error: private key does not match refferenced output's address`);
-            return false;
-        }
-
-        return true;
     }
 
     private findUTxOutByTxIn(txInput: TransactionInput, uTxOuts: UnspentTransactionOutput[]): UnspentTransactionOutput {

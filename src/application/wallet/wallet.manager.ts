@@ -4,15 +4,14 @@ import { TransactionFactory } from '../transaction/transaction-factory/transacti
 import { Node } from '../node/node';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
 import { ICreateTransactionParamsInterface } from './create-transaction-params.interface';
-import { KeyPair } from './key-generator/key-pair';
-import { KeyGeneratorService } from './key-generator/key-generator.service';
+import { KeyPair } from '../crypto/key-pair';
+import { CryptoService } from '../crypto/crypto.service';
 
 @Component()
 export class WalletManager {
-    constructor(
-        private transactionFactory: TransactionFactory,
-        private node: Node,
-        private keyGenerator: KeyGeneratorService
+    constructor(private transactionFactory: TransactionFactory,
+                private node: Node,
+                private crypto: CryptoService
     ) {
 
     }
@@ -20,8 +19,6 @@ export class WalletManager {
     async createTransaction(params: ICreateTransactionParamsInterface): Promise<Transaction> {
         const txPool: Transaction[] = await this.node.getTxPool();
         const uTxOuts: UnspentTransactionOutput[] = await this.node.getUnspentTxOutputs();
-
-        // todo validate structure before
 
         const newTx: Transaction = await this.transactionFactory.create({
             amount: params.amount,
@@ -32,13 +29,13 @@ export class WalletManager {
             txPool
         });
 
-        // await this.node.addTx(newTx);
+        await this.node.addTransaction(newTx);
 
         return newTx;
     }
 
     async generateNewKeyPair(): Promise<KeyPair> {
-        return this.keyGenerator.generateKeyPair();
+        return this.crypto.generateKeyPair();
     }
 
     async getBalance(publicKey: string): Promise<number> {

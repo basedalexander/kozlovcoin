@@ -5,7 +5,7 @@ import { Transaction } from '../transaction/classes/transaction';
 @Component()
 export class UnspentTransactionOutputsUtilsService {
 
-    public txsToUnspentTxOuts(transactions: Transaction[]): UnspentTransactionOutput[] {
+    public convertTxsToUnspentTxOuts(transactions: Transaction[]): UnspentTransactionOutput[] {
         return transactions
             .map((transaction) => {
                 return transaction.outputs.map((transactionOutput, outputTxIndex) => {
@@ -21,8 +21,8 @@ export class UnspentTransactionOutputsUtilsService {
     }
 
     public updateUTxOutsWithNewTxs(existingUTxOuts: UnspentTransactionOutput[], newTransactions: Transaction[]): UnspentTransactionOutput[] {
-        const newUTxOutputs: UnspentTransactionOutput[] = this.txsToUnspentTxOuts(newTransactions);
-        const consumedUTxOuts: UnspentTransactionOutput[] = this.txsToConsumedTxOuts(newTransactions);
+        const newUTxOutputs: UnspentTransactionOutput[] = this.convertTxsToUnspentTxOuts(newTransactions);
+        const consumedUTxOuts: UnspentTransactionOutput[] = this.convertTxsToConsumedTxOuts(newTransactions);
 
         const processedExistingUTxOuts: UnspentTransactionOutput[] = this.filterOutConsumedUTxOuts(existingUTxOuts, consumedUTxOuts);
         const processedNewUTxOuts: UnspentTransactionOutput[] = this.filterOutConsumedUTxOuts(newUTxOutputs, consumedUTxOuts);
@@ -32,7 +32,7 @@ export class UnspentTransactionOutputsUtilsService {
         return updatedExistingUTxOuts;
     }
 
-    public txsToConsumedTxOuts(transactions: Transaction[]): UnspentTransactionOutput[] {
+    public convertTxsToConsumedTxOuts(transactions: Transaction[]): UnspentTransactionOutput[] {
         const consumedTxOuts: UnspentTransactionOutput[] =
             transactions
                 .map(t => t.inputs)
@@ -54,7 +54,7 @@ export class UnspentTransactionOutputsUtilsService {
         consumedUTxOuts: UnspentTransactionOutput[]
     ): UnspentTransactionOutput[] {
 
-        return unspentTxOuts.filter((uTxOut) => !this.findUTxOut(uTxOut, consumedUTxOuts));
+        return unspentTxOuts.filter((uTxOut) => !this.findUTxOutput(uTxOut, consumedUTxOuts));
     }
 
     public addNewUTxOuts(
@@ -64,8 +64,8 @@ export class UnspentTransactionOutputsUtilsService {
         unspentTxOuts.push(...newUTxOuts);
     }
 
-    private findUTxOut(uTxOut: UnspentTransactionOutput, list: UnspentTransactionOutput[]): UnspentTransactionOutput {
-        return list.find(output => {
+    private findUTxOutput(uTxOut: UnspentTransactionOutput, uTxOutputs: UnspentTransactionOutput[]): UnspentTransactionOutput {
+        return uTxOutputs.find(output => {
             return (uTxOut.txOutputId === output.txOutputId) && (uTxOut.txOutputIndex === output.txOutputIndex);
         });
     }

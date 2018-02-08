@@ -1,17 +1,16 @@
 import { UnspentTransactionOutputsUtilsService } from './unspent-transaction-outputs-utils.service';
 import { Transaction } from '../transaction/classes/transaction';
-import { TransactionInput } from '../transaction/classes/transaction-input';
-import { TransactionOutput } from '../transaction/classes/transaction-output';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
+import { createCoinbaseTx, createTxWith2Outputs } from '../../../tests/helpers/tx-test-helpers';
 
 describe('UnspentTransactionOutputsUtilsService', () => {
     const service = new UnspentTransactionOutputsUtilsService();
 
-    describe('txsToUnspentTxOuts()', () => {
+    describe('convertTxsToUnspentTxOuts()', () => {
         it('should convert transactions with only one genesis tx', () => {
-            const txs: Transaction[] = [createGenesisTx()];
+            const txs: Transaction[] = [createCoinbaseTx()];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToUnspentTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToUnspentTxOuts(txs);
 
             expect(uTxOuts.length).toBe(1);
 
@@ -26,7 +25,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         it('should convert 1 tx with 2 outputs', () => {
             const txs: Transaction[] = [createTxWith2Outputs()];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToUnspentTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToUnspentTxOuts(txs);
 
             expect(uTxOuts.length).toBe(2);
 
@@ -48,7 +47,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         it('should convert many transactions', () => {
             const txs: Transaction[] = [createTxWith2Outputs(), createTxWith2Outputs()];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToUnspentTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToUnspentTxOuts(txs);
 
             expect(uTxOuts.length).toBe(4);
 
@@ -82,11 +81,11 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         });
     });
 
-    describe('txsToConsumedTxOuts()', () => {
+    describe('convertTxsToConsumedTxOuts()', () => {
         it('should return list of uTxOutputs from list with one genesis tx', () => {
-            const txs: Transaction[] = [createGenesisTx()];
+            const txs: Transaction[] = [createCoinbaseTx()];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToConsumedTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToConsumedTxOuts(txs);
 
             expect(uTxOuts.length).toBe(1);
 
@@ -99,7 +98,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         it('should return list of uTxOutputs from list with 2 transactions', () => {
             const txs: Transaction[] = [createTxWith2Outputs(), createTxWith2Outputs()];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToConsumedTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToConsumedTxOuts(txs);
 
             expect(uTxOuts.length).toBe(2);
 
@@ -117,7 +116,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         it('should return empty list if no transaction provided', () => {
             const txs: Transaction[] = [];
 
-            const uTxOuts: UnspentTransactionOutput[] = service.txsToConsumedTxOuts(txs);
+            const uTxOuts: UnspentTransactionOutput[] = service.convertTxsToConsumedTxOuts(txs);
 
             expect(uTxOuts.length).toBe(0);
         });
@@ -221,7 +220,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         it('should return correctly updated uTxOuts', () => {
 
             const txs: Transaction[] = [
-                createGenesisTx(),
+                createCoinbaseTx(),
                 {
                     id: '2',
                     inputs: [
@@ -271,7 +270,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
 
         it('should return correctly updated list of uTxOuts from already existing uTxOutputs', () => {
             const txs: Transaction[] = [
-                createGenesisTx(),
+                createCoinbaseTx(),
                 {
                     id: '2',
                     inputs: [
@@ -373,23 +372,3 @@ describe('UnspentTransactionOutputsUtilsService', () => {
         });
     });
 });
-
-const createGenesisTx = (): Transaction => {
-    const genesisInputTransaction = new TransactionInput('', 0, '');
-    const genesisOutputTransaction = new TransactionOutput('123', 50);
-
-    return new Transaction('1', [genesisInputTransaction], [genesisOutputTransaction]);
-};
-
-const createTxWith2Outputs = (): Transaction => {
-    const inputs: TransactionInput[] = [
-        new TransactionInput('', 0, '')
-    ];
-
-    const outputs: TransactionOutput[] = [
-        new TransactionOutput('1', 1),
-        new TransactionOutput('2', 2)
-    ];
-
-    return new Transaction('1', inputs, outputs);
-};

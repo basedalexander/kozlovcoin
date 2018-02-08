@@ -1,4 +1,4 @@
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
@@ -13,8 +13,6 @@ import { configuration } from '../system/configuration';
 import { IConfiguration } from '../system/configuration.interface';
 import { ILogger, TLogger } from '../system/logger/interfaces/logger.interface';
 import { LoggerModule } from '../system/logger/lib/logger.module';
-import { NestEnvironment } from '@nestjs/common/enums/nest-environment.enum';
-import { environment } from '../system/environment/environment';
 import { ValidationPipe } from '../application/api/validation/validation-pipe';
 import { HttpExceptionFilter } from '../application/api/exceptions/http-exception-handler';
 
@@ -32,9 +30,9 @@ export class Server implements IServer {
         this.app = express();
         this.setupMiddleware(this.app);
 
-        if (environment.mode === 'test') {
-            Logger.setMode(NestEnvironment.TEST);
-        }
+        // if (environment.mode === 'test') {
+        //    Logger.setMode(NestEnvironment.TEST);
+        // }
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.app);
         this.nestApp.useGlobalPipes(new ValidationPipe());

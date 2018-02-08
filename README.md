@@ -2,7 +2,7 @@ Blockchain Node with Wallet API implementation in Javascript
 
 [![Build Status](https://travis-ci.org/thohoh/kozlovcoin.svg?branch=master)](https://travis-ci.org/thohoh/kozlovcoin)
 
-###Run locally
+### Run locally
 ```
 git clone https://github.com/thohoh/kozlovcoin
 cd kozlovcoin
@@ -17,5 +17,5 @@ docker run -d -p 3008:3008 --name kozlovcoin thohoh/kozlovcoin
 ```
 
 
-###Open api docs 
+### Open api docs 
 [https://localhost:3008/docs](http://localhost:3008/docs)

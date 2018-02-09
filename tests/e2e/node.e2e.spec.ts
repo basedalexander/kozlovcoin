@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
 
-import { configuration } from '../../src/system/configuration';
 import { Server } from '../../src/server/server';
 
 describe('Node REST API', async () => {
@@ -9,18 +8,18 @@ describe('Node REST API', async () => {
     let httpServer;
 
     beforeAll(async () => {
-        await rimraf(configuration.storagePath);
-
         server = new Server();
 
         await server.init();
+
+        await rimraf(server.config.storagePath);
 
         await server.start();
 
         httpServer = server.getHttpServerInstance();
     });
 
-    beforeAll(async () => {
+    afterAll(async () => {
         await server.stop();
     });
 

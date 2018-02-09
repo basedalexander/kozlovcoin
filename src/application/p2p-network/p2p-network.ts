@@ -51,6 +51,7 @@ export class P2PNetwork {
                     reject(error.message);
                 } else {
                     resolve();
+                    this.logger.info(`P2P ${this.config.p2p.host}:${this.config.p2p.port} Websocket server is closed`);
                 }
             });
         });

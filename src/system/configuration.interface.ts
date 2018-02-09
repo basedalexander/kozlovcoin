@@ -3,6 +3,7 @@ export interface IConfiguration {
     server: IServerConfiguration;
     p2p: IP2PConfiguration;
     creatorPublicAddress: string;
+    creatorPrivateAddress;
     storagePath: string;
 }
 

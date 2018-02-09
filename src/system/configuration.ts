@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { IConfiguration, IP2PConfiguration, IServerConfiguration } from './configuration.interface';
 import { Component } from '@nestjs/common';
-import { environment, Environment } from './environment/environment';
+import { Environment } from './environment/environment';
 import { EnvType } from './environment/environment.interface';
 
 @Component()
@@ -11,13 +11,16 @@ export class Configuration implements IConfiguration {
     public server: IServerConfiguration;
     public p2p: IP2PConfiguration;
     public creatorPublicAddress: string;
+    public creatorPrivateAddress: string;
     public storagePath: string;
+    public mode: string;
 
     private config: IConfiguration;
 
     constructor(
        private env: Environment
     ) {
+        this.mode = env.mode;
         this.config = this.loadConfigFile();
 
         this.rootPath = path.join(__dirname, '../../', this.config.rootPath);
@@ -32,6 +35,7 @@ export class Configuration implements IConfiguration {
             peers: env.p2pPeers ? env.p2pPeers.split(',') : []
         };
         this.creatorPublicAddress = this.config.creatorPublicAddress;
+        this.creatorPrivateAddress = this.config.creatorPrivateAddress;
         this.storagePath = path.join(this.rootPath, this.config.storagePath);
     }
 
@@ -42,5 +46,3 @@ export class Configuration implements IConfiguration {
         return require(configPath);
     }
 }
-
-export const configuration: IConfiguration = new Configuration(environment);

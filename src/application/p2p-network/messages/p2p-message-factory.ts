@@ -4,16 +4,21 @@ import { IP2PMessage } from './interfaces/p2p-message.interface';
 import { P2PMessageType } from './interfaces/p2p-message-type';
 import { IP2PMessageHandler, IP2PMessageHandlerConstructor } from './interfaces/message-handler.interface';
 import { NullP2pMessageHandler } from './message-descriptors/null/null-p2p-message-handler';
+import { Configuration } from '../../../system/configuration';
 
 @Component()
 export class P2PMessageFactory {
-    public static container: INestApplicationContext;
-
     public static register(md: IP2PMessageMetadata) {
         P2PMessageFactory.registry.set(md.type, md);
     }
 
     private static registry: Map<P2PMessageType, IP2PMessageMetadata> = new Map();
+
+    private container: INestApplicationContext;
+
+    public setContainer(container: INestApplicationContext): void {
+        this.container = container;
+    }
 
     public createMessage(type: P2PMessageType, message?: any): IP2PMessage {
         return {
@@ -36,10 +41,10 @@ export class P2PMessageFactory {
     }
 
     private resolveInstance(type: any): any {
-        if (!P2PMessageFactory.container) {
+        if (!this.container) {
             throw new Error('P2PMessageFactory: container is not found');
         }
 
-        return P2PMessageFactory.container.get(type);
+        return this.container.get(type);
     }
 }

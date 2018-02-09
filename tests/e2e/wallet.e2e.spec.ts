@@ -4,7 +4,6 @@ import * as rimraf from 'rimraf-promise';
 
 // tslint:disable
 const config = require('../../config/local-config.json');
-import { configuration } from "../../src/system/configuration";
 import { Server } from '../../src/server/server';
 
 describe('Wallet REST API', async () => {
@@ -12,17 +11,18 @@ describe('Wallet REST API', async () => {
     let httpServer;
 
     beforeAll(async () => {
-        await rimraf(configuration.storagePath);
         server = new Server();
 
         await server.init();
+
+        await rimraf(server.config.storagePath);
 
         await server.start();
 
         httpServer = server.getHttpServerInstance();
     });
 
-    beforeAll(async () => {
+    afterAll(async () => {
        await server.stop();
     });
 

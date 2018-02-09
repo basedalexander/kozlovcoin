@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
@@ -19,6 +19,7 @@ import { P2PNetwork } from '../application/p2p-network/p2p-network';
 import { NodeModule } from '../application/node/node.module';
 import { P2PMessageFactory } from '../application/p2p-network/messages/p2p-message-factory';
 import { environment } from '../system/environment/environment';
+import { NestEnvironment } from '@nestjs/common/enums/nest-environment.enum';
 
 export class Server implements IServer {
     private app: Express;

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Res } from '@nestjs/common';
 import {  ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { GetBlocksResponseDTO } from './dto/get-blocks-response.dto';
 import { NodeManager } from '../../../node/node-manager';
@@ -9,6 +9,8 @@ import { UnspentTransactionOutput } from '../../../transaction/classes/unspent-t
 import { Transaction } from '../../../transaction/classes/transaction';
 import { GetTransactionPoolResponseDto } from './dto/get-transaction-pool-response.dto';
 import { ErrorResponseDTO } from './error-response.dto';
+import { AddPeerDTO } from './dto/add-peer-dto';
+import { GetPeersResponseDto } from './dto/get-peers-response.dto';
 
 @ApiUseTags('Node API')
 @ApiResponse({
@@ -80,6 +82,33 @@ export class NodeController {
     @Get('tx-pool')
     async getTransactionPool(@Res() res) {
         const result: Transaction[] = await this.nodeManager.getTxPool();
+
+        res.json({
+            data: result
+        });
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Returns empty body'
+    })
+    @Post('peer')
+    async addPeer(@Body() addPeerDTO: AddPeerDTO, @Res() res) {
+        await this.nodeManager.addPeer(addPeerDTO.address);
+
+        res.json({
+
+        });
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Returns an array of peer addresses',
+        type: GetPeersResponseDto
+    })
+    @Get('peers')
+    async getPeers(@Res() res) {
+        const result = await this.nodeManager.getPeers();
 
         res.json({
             data: result

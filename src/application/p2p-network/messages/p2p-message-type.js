@@ -1,9 +1,0 @@
-export const P2PMessageType = {
-    QUERY_LATEST_BLOCK: 0,
-    RESPONSE_LATEST_BLOCK: 1,
-    QUERY_ALL_BLOCKS: 2,
-    RESPONSE_ALL_BLOCKS: 3,
-    NEW_BLOCK_MINED: 4,
-    QUERY_TX_POOL: 5,
-    RESPONSE_TX_POOL: 6
-};

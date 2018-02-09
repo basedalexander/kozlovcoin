@@ -37,9 +37,9 @@ export class Server implements IServer {
         this.app = express();
         this.setupMiddleware(this.app);
 
-         if (environment.mode === 'test') {
+        if (environment.mode === 'test') {
             Logger.setMode(NestEnvironment.TEST);
-         }
+        }
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.app);
         this.nestApp.useGlobalPipes(new ValidationPipe());

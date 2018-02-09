@@ -8,6 +8,7 @@ import { SystemModule } from '../../system/system.module';
 import { UnspentTransactionOutputsModule } from '../unspent-transaction-outputs/unspent-transaction-outputs.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { nodeProvider } from './node-provider';
+import { P2P_PROVIDERS } from '../p2p-network/p2p-providers';
 
 @Module({
     imports: [
@@ -20,14 +21,16 @@ import { nodeProvider } from './node-provider';
     ],
     components: [
         nodeProvider,
-        NodeManager
+        NodeManager,
+        ...P2P_PROVIDERS
     ],
     controllers: [
         NodeController
     ],
     exports: [
         NodeManager,
-        nodeProvider
+        nodeProvider,
+        ...P2P_PROVIDERS
     ]
 })
 export class NodeModule {

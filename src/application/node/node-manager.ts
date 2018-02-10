@@ -35,4 +35,8 @@ export class NodeManager {
     async getPeers(): Promise<string[]> {
         return await this.p2p.getPeers();
     }
+
+    async mineNewBlock(): Promise<IBlock> {
+        return await this.node.mineNewBlock();
+    }
 }

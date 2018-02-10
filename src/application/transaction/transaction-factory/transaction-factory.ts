@@ -18,8 +18,8 @@ export class TransactionFactory {
 
     }
 
-    public createCoinbase(publicAddress, coinbaseAmount): Transaction {
-        const genesisInputTransaction = new TransactionInput('', 0, '');
+    public createCoinbase(publicAddress, coinbaseAmount, blockIndex: number): Transaction {
+        const genesisInputTransaction = new TransactionInput('', blockIndex, '');
         const genesisOutputTransaction = new TransactionOutput(publicAddress, coinbaseAmount);
 
         const tx = new Transaction('', [genesisInputTransaction], [genesisOutputTransaction]);

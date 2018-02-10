@@ -9,6 +9,7 @@ import { UnspentTransactionOutputsModule } from '../unspent-transaction-outputs/
 import { TransactionModule } from '../transaction/transaction.module';
 import { P2P_PROVIDERS } from '../p2p-network/p2p-providers';
 import { Node } from './node';
+import { MiningHelpersService } from './mining-helpers.service';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { Node } from './node';
     components: [
         Node,
         NodeManager,
+        MiningHelpersService,
         ...P2P_PROVIDERS
     ],
     controllers: [

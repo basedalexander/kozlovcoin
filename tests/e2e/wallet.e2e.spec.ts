@@ -15,6 +15,7 @@ describe('Wallet REST API', async () => {
         await server.init();
 
         server.config.server.port = 3002;
+        server.config.p2p.port = 6002;
 
         await rimraf(server.config.storagePath);
 

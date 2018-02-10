@@ -4,17 +4,27 @@ import { StorageModule } from '../storage/storage.module';
 import { Blockchain } from './blockchain';
 import { TStorage } from '../storage/storage.interface';
 import { FSStorage } from '../storage/fs-storage';
+import { InMemoryStorage } from '../storage/in-memory-storage';
+import { Configuration } from '../../system/configuration';
+import { SystemModule } from '../../system/system.module';
 
 @Module({
     imports: [
-        StorageModule
+        StorageModule,
+        SystemModule
     ],
     components: [
         Blockchain,
         {
             provide: TStorage,
-            useFactory: storage => storage,
-            inject: [FSStorage]
+            useFactory: (config, memStorage, fsStorage) => {
+                if (config.mode === 'test') {
+                    return memStorage;
+                } else {
+                    return fsStorage;
+                }
+            },
+            inject: [Configuration, InMemoryStorage, FSStorage]
         }
     ],
     exports: [

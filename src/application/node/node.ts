@@ -11,6 +11,7 @@ import { TransactionFactory } from '../transaction/transaction-factory/transacti
 import { Transaction } from '../transaction/classes/transaction';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
 import { BlockFactory } from '../block/block-factory';
+import { MiningHelpersService } from './mining-helpers.service';
 
 @Component()
 export class Node {
@@ -18,7 +19,6 @@ export class Node {
     public newTransaction = new EventEmitter();
     public txPoolUpdate = new EventEmitter();
 
-    private TRANSACTIONS_PER_BLOCK_LIMIT = 2;
     private BLOCK_GENERATION_INTERVAL = 10;
     private DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
     private COINBASE_AMOUNT = 50;
@@ -29,7 +29,9 @@ export class Node {
                 private unspentTxOutputs: UnspentTransactionOutputs,
                 private transactionPool: TransactionPool,
                 private transactionFactory: TransactionFactory,
-                private blockFactory: BlockFactory) {
+                private blockFactory: BlockFactory,
+                private miningHelper: MiningHelpersService
+    ) {
 
         this.blockMined = new EventEmitter();
         this.newTransaction = new EventEmitter();
@@ -44,6 +46,32 @@ export class Node {
         this.txPoolUpdate.emit(pool);
     }
 
+    async mineNewBlock(): Promise<IBlock> {
+        const lastBlock: IBlock = await this.blockchain.getLatestBlock();
+        const nextBlockIndex: number = lastBlock.index + 1;
+        const coinbaseTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, this.COINBASE_AMOUNT, nextBlockIndex);
+
+        const txPool: Transaction[] = await this.getTxPool();
+        const blockData: Transaction[] = [coinbaseTx].concat(txPool);
+        const blockchain: IBlock[] = await this.getBlocks();
+
+        const newBlock = this.blockFactory.createNew(
+            blockData,
+            blockchain,
+            this.BLOCK_GENERATION_INTERVAL,
+            this.DIFFICULTY_ADJUSTMENT_INTERVAL
+        );
+
+        await this.blockchain.addBlock(newBlock);
+
+        await this.unspentTxOutputs.update(newBlock);
+        await this.transactionPool.clear();
+
+        this.blockMined.emit(newBlock);
+
+        return newBlock;
+    }
+
     async getUnspentTxOutputs(): Promise<UnspentTransactionOutput[]> {
         return this.unspentTxOutputs.get();
     }
@@ -54,7 +82,7 @@ export class Node {
 
     async init() {
         if (!await this.blockchain.isStored()) {
-            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, this.COINBASE_AMOUNT);
+            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, this.COINBASE_AMOUNT, 0);
             const genesisBlock = this.blockFactory.createGenesis(genesisTx);
 
             await this.blockchain.addBlock(genesisBlock);

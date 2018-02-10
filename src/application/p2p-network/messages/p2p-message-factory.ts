@@ -1,10 +1,10 @@
-import { Component, INestApplicationContext } from '@nestjs/common';
+import { Component, INestApplicationContext, OnModuleInit } from '@nestjs/common';
 import { IP2PMessageMetadata } from './message-descriptors/p2p-message-descriptor-decorator';
 import { IP2PMessage } from './interfaces/p2p-message.interface';
 import { P2PMessageType } from './interfaces/p2p-message-type';
 import { IP2PMessageHandler, IP2PMessageHandlerConstructor } from './interfaces/message-handler.interface';
 import { NullP2pMessageHandler } from './message-descriptors/null/null-p2p-message-handler';
-import { Configuration } from '../../../system/configuration';
+import { ModuleRef } from '@nestjs/core';
 
 @Component()
 export class P2PMessageFactory {
@@ -15,6 +15,8 @@ export class P2PMessageFactory {
     private static registry: Map<P2PMessageType, IP2PMessageMetadata> = new Map();
 
     private container: INestApplicationContext;
+
+    constructor(private readonly moduleRef: ModuleRef) {}
 
     public setContainer(container: INestApplicationContext): void {
         this.container = container;
@@ -41,10 +43,10 @@ export class P2PMessageFactory {
     }
 
     private resolveInstance(type: any): any {
-        if (!this.container) {
-            throw new Error('P2PMessageFactory: container is not found');
-        }
+        // if (!this.container) {
+        //    throw new Error('P2PMessageFactory: container is not found');
+        // }
 
-        return this.container.get(type);
+        return this.moduleRef.get(type);
     }
 }

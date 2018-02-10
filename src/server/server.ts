@@ -16,7 +16,6 @@ import { ValidationPipe } from '../application/api/validation/validation-pipe';
 import { HttpExceptionFilter } from '../application/api/exceptions/http-exception-handler';
 import { P2PNetwork } from '../application/p2p-network/p2p-network';
 import { NodeModule } from '../application/node/node.module';
-import { P2PMessageFactory } from '../application/p2p-network/messages/p2p-message-factory';
 import { SystemModule } from '../system/system.module';
 import { Node } from '../application/node/node';
 
@@ -34,10 +33,6 @@ export class Server implements IServer {
         this.app = express();
         this.setupMiddleware(this.app);
 
-        // if (environment.mode === 'test') {
-        //    Logger.setMode(NestEnvironment.TEST);
-        // }
-
         const appFactory = new NestFactoryStatic();
 
         this.nestApp = await appFactory.create(ApplicationModule, this.app);
@@ -47,10 +42,6 @@ export class Server implements IServer {
         this.config = this.nestApp.select(SystemModule).get(Configuration);
         this.logger = this.nestApp.select(LoggerModule).get(TLogger);
         this.p2p = this.nestApp.select(NodeModule).get(P2PNetwork);
-
-        const container = this.nestApp.select(NodeModule);
-        const msgFactory = container.get(P2PMessageFactory);
-        msgFactory.setContainer(container);
 
         this.setupApiDocs(this.nestApp);
 

@@ -1,4 +1,4 @@
-import { Component, INestApplicationContext, OnModuleInit } from '@nestjs/common';
+import { Component, INestApplicationContext } from '@nestjs/common';
 import { IP2PMessageMetadata } from './message-descriptors/p2p-message-descriptor-decorator';
 import { IP2PMessage } from './interfaces/p2p-message.interface';
 import { P2PMessageType } from './interfaces/p2p-message-type';
@@ -17,10 +17,6 @@ export class P2PMessageFactory {
     private container: INestApplicationContext;
 
     constructor(private readonly moduleRef: ModuleRef) {}
-
-    public setContainer(container: INestApplicationContext): void {
-        this.container = container;
-    }
 
     public createMessage(type: P2PMessageType, message?: any): IP2PMessage {
         return {
@@ -43,10 +39,6 @@ export class P2PMessageFactory {
     }
 
     private resolveInstance(type: any): any {
-        // if (!this.container) {
-        //    throw new Error('P2PMessageFactory: container is not found');
-        // }
-
         return this.moduleRef.get(type);
     }
 }

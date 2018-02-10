@@ -1,50 +1,11 @@
 /*tslint:disable quotemark object-literal-key-quotes*/
 
-import { Server } from '../../../src/server/server';
 import { IServer } from '../../../src/server/server.interface';
 import * as request from 'supertest';
 import { timer } from '../../helpers/misc';
 import accounts from './test-accounts';
-
-//tslint:disable
-
-const HOST: string = 'localhost';
-
-const nodeAConfig = {
-    "server": {
-        "host": HOST,
-        "port": 4001
-    },
-    "p2p": {
-        "host": HOST,
-        "port": 6001,
-        "peers": []
-    }
-};
-
-const nodeBConfig = {
-    "server": {
-        "host": HOST,
-        "port": 4002
-    },
-    "p2p": {
-        "host": HOST,
-        "port": 6002,
-        "peers": []
-    }
-};
-
-const nodeCConfig = {
-    "server": {
-        "host": HOST,
-        "port": 4003
-    },
-    "p2p": {
-        "host": HOST,
-        "port": 6003,
-        "peers": []
-    }
-};
+import { nodeAConfig, nodeBConfig, nodeCConfig } from './node-configs';
+import { startServer, stopServer, createWsAddressFromConfig } from './helpers';
 
 describe('P2P Network Sync', () => {
     let serverA: IServer;
@@ -56,7 +17,7 @@ describe('P2P Network Sync', () => {
     let serverC: IServer;
     let httpServerC;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         serverA = await startServer(nodeAConfig);
         httpServerA = serverA.getHttpServerInstance();
 
@@ -67,14 +28,14 @@ describe('P2P Network Sync', () => {
         httpServerC = serverC.getHttpServerInstance();
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await stopServer(serverA);
         await stopServer(serverB);
         await stopServer(serverC);
     });
 
-    describe('Peer registration', () => {
-        it('A and B module should add each other in their peer lists when peer NodeB is added to NodeA', async() => {
+    describe('Peer adding', () => {
+        it('A and B module should add each other in their peer lists when peer NodeB is added to NodeA', async () => {
             const nodeBAddress: string = createWsAddressFromConfig(nodeBConfig);
 
             const addPeerToNodeAResult = await request(httpServerA)
@@ -104,33 +65,52 @@ describe('P2P Network Sync', () => {
             expect(typeof getNodeBPeersResult.body.data[0]).toBe('string');
         });
     });
+
+    describe('Transaction Pool Synchronization amoungst peers', () => {
+        it('A and B nodes should sync tx pool', async () => {
+
+            const nodeBAddress: string = createWsAddressFromConfig(nodeBConfig);
+            const addPeerToNodeAResult = await request(httpServerA)
+                .post('/peer')
+                .set('Accept', 'application/json')
+                .send({
+                    address: nodeBAddress
+                });
+            expect(addPeerToNodeAResult.status).toBe(200);
+
+            const getNodeATxPoolResult = await request(httpServerA)
+                .get('/tx-pool')
+                .set('Accept', 'application/json');
+            expect(getNodeATxPoolResult.status).toBe(200);
+            expect(getNodeATxPoolResult.body.data.length).toBe(0);
+
+            const sendTransactionToNodeAResult = await request(httpServerA)
+                .post('/wallet/transaction')
+                .set('Accept', 'application/json')
+                .send({
+                    recipientPublicKey: accounts.walletA.publicKey,
+                    senderPrivateKey: accounts.creator.privateKey,
+                    senderPublicKey: accounts.creator.publicKey,
+                    amount: 20
+                });
+            expect(sendTransactionToNodeAResult.status).toBe(200);
+
+            const getNodeATxPoolResult2 = await request(httpServerA)
+                .get('/tx-pool')
+                .set('Accept', 'application/json');
+            expect(getNodeATxPoolResult2.status).toBe(200);
+            expect(getNodeATxPoolResult2.body.data.length).toBe(1);
+
+            const getNodeBTxPoolResult = await request(httpServerA)
+                .get('/tx-pool')
+                .set('Accept', 'application/json');
+            expect(getNodeBTxPoolResult.status).toBe(200);
+            expect(getNodeBTxPoolResult.body.data.length).toBe(1);
+
+            const nodeAPool = JSON.stringify(getNodeATxPoolResult2.body.data);
+            const nodeBPool = JSON.stringify(getNodeBTxPoolResult.body.data);
+
+            expect(nodeAPool === nodeBPool).toBe(true);
+        });
+    });
 });
-
-const createWsAddressFromConfig = (config): string => {
-    return `ws://${config.p2p.host}:${config.p2p.port}`;
-};
-
-const startServer = async (config): Promise<IServer> => {
-    const server = new Server();
-
-    await server.init();
-
-    server.config.mode = 'local';
-    server.config.server.host = config.server.host;
-    server.config.server.port = config.server.port;
-
-    server.config.p2p.host = config.p2p.host;
-    server.config.p2p.port = config.p2p.port;
-    server.config.p2p.peers = config.p2p.peers;
-
-    server.config.creatorPrivateAddress = accounts.creator.privateKey;
-    server.config.creatorPublicAddress = accounts.creator.publicKey;
-
-    await server.start();
-
-    return server;
-};
-
-const stopServer = async (server: IServer): Promise<void> => {
-    await server.stop();
-};

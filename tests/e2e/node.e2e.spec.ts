@@ -12,6 +12,8 @@ describe('Node REST API', async () => {
 
         await server.init();
 
+        server.config.server.port = 3001;
+
         await rimraf(server.config.storagePath);
 
         await server.start();

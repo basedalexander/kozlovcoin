@@ -15,28 +15,29 @@ export class Configuration implements IConfiguration {
     public storagePath: string;
     public mode: string;
 
-    private config: IConfiguration;
-
     constructor(
        private env: Environment
     ) {
-        this.mode = env.mode;
-        this.config = this.loadConfigFile();
-
-        this.rootPath = path.join(__dirname, '../../', this.config.rootPath);
+        this.mode = this.env.mode;
+        const config = this.loadConfigFile();
+        this.applyConfig(config);
+    }
+    
+    public applyConfig(config: IConfiguration): void {
+        this.rootPath = path.join(__dirname, '../../', config.rootPath);
         this.server = {
-            host: env.serverHost ? env.serverHost : this.config.server.host,
-            port: env.serverPort ?  env.serverPort : this.config.server.port,
-            apiDocsRoute: this.config.server.apiDocsRoute
+            host: this.env.serverHost ? this.env.serverHost : config.server.host,
+            port: this.env.serverPort ?  this.env.serverPort : config.server.port,
+            apiDocsRoute: config.server.apiDocsRoute
         };
         this.p2p = {
-            host: env.p2pHost ? env.p2pHost : this.config.p2p.host,
-            port: env.p2pPort ? env.p2pPort : this.config.p2p.port,
-            peers: env.p2pPeers ? env.p2pPeers.split(',') : []
+            host: this.env.p2pHost ? this.env.p2pHost : config.p2p.host,
+            port: this.env.p2pPort ? this.env.p2pPort : config.p2p.port,
+            peers: this.env.p2pPeers ? this.env.p2pPeers.split(',') : []
         };
-        this.creatorPublicAddress = this.config.creatorPublicAddress;
-        this.creatorPrivateAddress = this.config.creatorPrivateAddress;
-        this.storagePath = path.join(this.rootPath, this.config.storagePath);
+        this.creatorPublicAddress = config.creatorPublicAddress;
+        this.creatorPrivateAddress = config.creatorPrivateAddress;
+        this.storagePath = path.join(this.rootPath, config.storagePath);
     }
 
     private loadConfigFile(): IConfiguration {

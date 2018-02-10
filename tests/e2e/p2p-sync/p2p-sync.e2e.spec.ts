@@ -1,9 +1,10 @@
 /*tslint:disable quotemark object-literal-key-quotes*/
 
-import { Server } from '../../src/server/server';
-import { IServer } from '../../src/server/server.interface';
+import { Server } from '../../../src/server/server';
+import { IServer } from '../../../src/server/server.interface';
 import * as request from 'supertest';
-import { timer } from '../helpers/misc';
+import { timer } from '../../helpers/misc';
+import accounts from './test-accounts';
 
 //tslint:disable
 
@@ -121,6 +122,9 @@ const startServer = async (config): Promise<IServer> => {
     server.config.p2p.host = config.p2p.host;
     server.config.p2p.port = config.p2p.port;
     server.config.p2p.peers = config.p2p.peers;
+
+    server.config.creatorPrivateAddress = accounts.creator.privateKey;
+    server.config.creatorPublicAddress = accounts.creator.publicKey;
 
     await server.start();
 

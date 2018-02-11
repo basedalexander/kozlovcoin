@@ -10,7 +10,7 @@ export class Blockchain {
     }
 
     async isStored(): Promise<boolean> {
-        const lastBlock: IBlock = await this.getLatestBlock();
+        const lastBlock: IBlock = await this.getLastBlock();
 
         if (!lastBlock) {
             return false;
@@ -45,7 +45,7 @@ export class Blockchain {
         await this.saveBlocks(blocks);
     }
 
-    async getLatestBlock(): Promise<IBlock> {
+    async getLastBlock(): Promise<IBlock> {
         const blocks: IBlock[] = await this.getBlocks();
 
         if (blocks && (blocks.length > 0)) {

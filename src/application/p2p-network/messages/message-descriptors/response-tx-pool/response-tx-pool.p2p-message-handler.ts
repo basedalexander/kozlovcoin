@@ -22,8 +22,12 @@ export class ResponseTxPoolP2PMessageHandler implements IP2PMessageHandler {
             return;
         }
 
-        receivedTransactions.forEach(async transaction => {
-            await this.node.addTransaction(transaction);
-        });
+        for (const tx of receivedTransactions) {
+            try {
+                await this.node.addTransaction(tx);
+            } catch (e) {
+                this.logger.error(`Invalid tx received ${tx.id}`);
+            }
+        }
     }
 }

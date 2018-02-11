@@ -6,12 +6,14 @@ import { EnvType } from './environment/environment.interface';
 
 @Component()
 export class Configuration implements IConfiguration {
+    public creatorPublicAddress: string;
+    public creatorPrivateAddress: string;
+    public minerPublicAddress: string;
 
     public rootPath: string;
     public server: IServerConfiguration;
     public p2p: IP2PConfiguration;
-    public creatorPublicAddress: string;
-    public creatorPrivateAddress: string;
+
     public storagePath: string;
     public mode: string;
 
@@ -24,6 +26,10 @@ export class Configuration implements IConfiguration {
     }
     
     public applyConfig(config: IConfiguration): void {
+        this.creatorPublicAddress = config.creatorPublicAddress;
+        this.creatorPrivateAddress = config.creatorPrivateAddress;
+        this.minerPublicAddress = config.minerPublicAddress;
+
         this.rootPath = path.join(__dirname, '../../', config.rootPath);
         this.server = {
             host: this.env.serverHost ? this.env.serverHost : config.server.host,
@@ -35,8 +41,7 @@ export class Configuration implements IConfiguration {
             port: this.env.p2pPort ? this.env.p2pPort : config.p2p.port,
             peers: this.env.p2pPeers ? this.env.p2pPeers.split(',') : []
         };
-        this.creatorPublicAddress = config.creatorPublicAddress;
-        this.creatorPrivateAddress = config.creatorPrivateAddress;
+
         this.storagePath = path.join(this.rootPath, config.storagePath);
     }
 

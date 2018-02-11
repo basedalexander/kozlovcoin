@@ -8,7 +8,9 @@ import { hexToBinary } from '../../lib/utils';
 
 @Component()
 export class BlockUtilsService {
-    constructor(private crypto: CryptoService) {
+    constructor(
+        private crypto: CryptoService
+    ) {
     }
 
     public mineBlock(
@@ -76,6 +78,12 @@ export class BlockUtilsService {
     ): string {
         const tempBlock = new Block(index, timeStamp, data, previousBlockHash, '', difficulty, nonce);
         return this.calcHashForBlock(tempBlock);
+    }
+
+    public retrieveTransactionsFromBlocks(blocks: IBlock[]): Transaction[] {
+        return blocks
+            .map(block => block.data)
+            .reduce((a, b) => a.concat(b), []);
     }
 
     public checkHashMatchesDifficulty(hash: string, difficulty: number): boolean {

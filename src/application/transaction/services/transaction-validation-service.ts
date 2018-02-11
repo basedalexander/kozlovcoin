@@ -7,15 +7,30 @@ import { TransactionOutput } from '../classes/transaction-output';
 import { TransactionUtilsService } from './transaction-utils.service';
 import { CryptoService } from '../../crypto/crypto.service';
 import { ICreateTransactionParams } from '../transaction-factory/create-transaction-params.interface';
+import { SystemConstants } from '../../../system/system-constants';
 
 @Component()
 export class TransactionValidationService {
     constructor(
         @Inject(TLogger) private logger: ILogger,
         private txUtils: TransactionUtilsService,
-        private crypto: CryptoService
+        private crypto: CryptoService,
+        private constants: SystemConstants
     ) {
 
+    }
+
+    validateCoinbase(tx: Transaction): boolean {
+        if (!this.validateTxStructure(tx)) {
+            return false;
+        }
+
+        if (tx.outputs[0].amount !== this.constants.COINBASE_AMOUNT) {
+            this.logError(`coinbase output amount is not valid`, tx);
+            return false;
+        }
+
+        return true;
     }
 
     validateNew(tx: Transaction, uTxOuts: UnspentTransactionOutput[]): boolean {
@@ -27,14 +42,12 @@ export class TransactionValidationService {
             return false;
         }
 
-        const inputsValid: boolean = this.validateTxInputs(tx, uTxOuts);
-        if (!inputsValid) {
-            this.logger.error(`Some of tx's inputs are not valid`);
+        if (!this.validateTxInputs(tx, uTxOuts)) {
+            this.logError(`Some of tx's inputs are not valid`, tx);
             return false;
         }
 
-        const amountValid: boolean = this.validateAmount(tx, uTxOuts);
-        if (!amountValid) {
+        if (!this.validateAmount(tx, uTxOuts)) {
             return false;
         }
 
@@ -50,7 +63,8 @@ export class TransactionValidationService {
                 .map(tx => tx.inputs)
                 .reduce((a, b) => a.concat(b), []);
 
-        const newTxInputsAreNew: boolean = newTx.inputs.every(txInput => {
+        // checks if newTx inputs are not taken be some of the existing transactions
+        const inputsNotTaken: boolean = newTx.inputs.every(txInput => {
             const txInputFound: boolean = !!allInputs.find(existingInput => {
                 return (txInput.txOutputIndex === existingInput.txOutputIndex) && (txInput.txOutputId === existingInput.txOutputId);
             });
@@ -58,7 +72,7 @@ export class TransactionValidationService {
             return !txInputFound;
         });
 
-        return newTxInputsAreNew;
+        return inputsNotTaken;
     }
 
     validateTxInputs(tx: Transaction, uTxOuts: UnspentTransactionOutput[]): boolean {
@@ -70,6 +84,7 @@ export class TransactionValidationService {
             uTxOuts.find(uTxO => uTxO.txOutputId === txInput.txOutputId && uTxO.txOutputIndex === txInput.txOutputIndex);
 
         if (!referencedUTxOut) {
+            this.logError(`referenced uTxOutput is not found for input ${JSON.stringify(txInput)}`, transaction);
             return false;
         }
 
@@ -78,6 +93,7 @@ export class TransactionValidationService {
         if (!validSignature) {
             return false;
         }
+
         return true;
     }
 
@@ -97,7 +113,7 @@ export class TransactionValidationService {
         const valid: boolean = this.crypto.verifySignedMessage(tx.id, txInput.signature, refUTxOutput.address);
 
         if (!valid) {
-            this.logger.error(`Input signature is not valid`);
+            this.logError(`Input signature is not valid in input : ${JSON.stringify(txInput)}`, tx);
         }
 
         return true;
@@ -105,26 +121,26 @@ export class TransactionValidationService {
 
     validateTxStructure(tx: Transaction): boolean {
         if (typeof tx.id !== 'string') {
-            this.logger.error('transactionId missing');
+            this.logError('transactionId missing', tx);
             return false;
         }
 
         if (!(tx.inputs instanceof Array)) {
-            this.logger.error('invalid txIns type in transaction');
+            this.logError('invalid inputs', tx);
             return false;
         }
 
-        const inputsValid: boolean = tx.inputs.every(txInput => this.validateTxInputStructure(txInput));
+        const inputsValid: boolean = tx.inputs.every(txInput => this.validateTxInputStructure(txInput, tx));
         if (!inputsValid) {
             return false;
         }
 
         if (!(tx.outputs instanceof Array)) {
-            this.logger.error('invalid txIns type in transaction');
+            this.logError('invalid outputs', tx);
             return false;
         }
 
-        const outputsValid: boolean = tx.outputs.every(txOutput => this.validateTxOutputStructure(txOutput));
+        const outputsValid: boolean = tx.outputs.every(txOutput => this.validateTxOutputStructure(txOutput, tx));
         if (!outputsValid) {
             return false;
         }
@@ -132,36 +148,36 @@ export class TransactionValidationService {
         return true;
     }
 
-    validateTxInputStructure(txInput: TransactionInput): boolean {
+    validateTxInputStructure(txInput: TransactionInput, tx: Transaction): boolean {
         if (txInput == null) {
-            this.logger.error('txInput is null');
+            this.logError('txInput is null', tx);
             return false;
         } else if (typeof txInput.signature !== 'string') {
-            this.logger.error('invalid signature type in txInput');
+            this.logError('invalid signature type in txInput', tx);
             return false;
         } else if (typeof txInput.txOutputId !== 'string') {
-            this.logger.error('invalid txOutId type in txInput');
+            this.logError('invalid txOutId type in txInput', tx);
             return false;
         } else if (typeof  txInput.txOutputIndex !== 'number') {
-            this.logger.error('invalid txOutIndex type in txInput');
+            this.logError('invalid txOutIndex type in txInput', tx);
             return false;
         } else {
             return true;
         }
     }
 
-    validateTxOutputStructure(txOutput: TransactionOutput): boolean {
+    validateTxOutputStructure(txOutput: TransactionOutput, tx: Transaction): boolean {
         if (txOutput == null) {
-            this.logger.error('txOutput is null');
+            this.logError('txOutput is null', tx);
             return false;
         } else if (typeof txOutput.address !== 'string') {
-            this.logger.error('invalid address type in txOutput');
+            this.logError('invalid address type in txOutput', tx);
             return false;
         } else if (!this.crypto.validatePublicKey(txOutput.address)) {
-            this.logger.error('invalid TxOut address');
+            this.logError('invalid TxOut address', tx);
             return false;
         } else if (typeof txOutput.amount !== 'number') {
-            this.logger.error('invalid amount type in txOutput');
+            this.logError('invalid amount type in txOutput', tx);
             return false;
         } else {
             return true;
@@ -172,7 +188,7 @@ export class TransactionValidationService {
         const calculatedId: string = this.txUtils.calcTransactionId(tx);
 
         if (calculatedId !== tx.id) {
-            this.logger.error(`Invalid tx id: ${tx.id}`);
+            this.logError('Invalid id', tx);
             return false;
         }
 
@@ -197,5 +213,10 @@ export class TransactionValidationService {
         }
 
         return true;
+    }
+
+    private logError(message: string, tx?: Transaction): void {
+        const txInfo: string = tx ? (`\n transaction => ${tx.id}`) : '';
+        this.logger.error(`Transaction validation error: ${message} ${txInfo}`);
     }
 }

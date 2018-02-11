@@ -11,7 +11,7 @@ export const startServer = async (config): Promise<IServer> => {
 
     await server.init();
 
-    server.config.mode = 'local';
+    server.config.mode = 'test';
     server.config.server.host = config.server.host;
     server.config.server.port = config.server.port;
 

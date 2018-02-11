@@ -51,9 +51,7 @@ export class Server implements IServer {
     public async start(): Promise<void> {
         await this.node.init();
 
-        if (this.config.mode !== 'test') {
-            await this.p2p.start();
-        }
+        await this.p2p.start();
 
         await this.nestApp.listen(this.config.server.port);
 
@@ -63,9 +61,7 @@ export class Server implements IServer {
     public async stop(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
 
-            if (this.config.mode !== 'test') {
-                await this.p2p.close();
-            }
+            await this.p2p.close();
 
             const httpServer = this.nestApp.getHttpServer();
 

@@ -1,4 +1,4 @@
-import { Component } from '@nestjs/common';
+import { Component, Inject } from '@nestjs/common';
 import { TransactionInput } from '../classes/transaction-input';
 import { TransactionOutput } from '../classes/transaction-output';
 import { Transaction } from '../classes/transaction';
@@ -7,20 +7,24 @@ import { ICreateTransactionParams } from './create-transaction-params.interface'
 import { UnspentTransactionOutput } from '../classes/unspent-transaction-output';
 import { UnspentTransactionOutputsUtilsService } from '../../unspent-transaction-outputs/unspent-transaction-outputs-utils.service';
 import { TransactionValidationService } from '../services/transaction-validation-service';
+import { ILogger, TLogger } from '../../../system/logger/interfaces/logger.interface';
+import { SystemConstants } from '../../../system/system-constants';
 
 @Component()
 export class TransactionFactory {
     constructor(
         private utils: TransactionUtilsService,
         private uTxOutsUtils: UnspentTransactionOutputsUtilsService,
-        private validationService: TransactionValidationService
+        private validator: TransactionValidationService,
+        @Inject(TLogger) private logger: ILogger,
+        private constants: SystemConstants
     ) {
 
     }
 
-    public createCoinbase(publicAddress, coinbaseAmount, blockIndex: number): Transaction {
+    public createCoinbase(publicAddress, blockIndex: number): Transaction {
         const genesisInputTransaction = new TransactionInput('', blockIndex, '');
-        const genesisOutputTransaction = new TransactionOutput(publicAddress, coinbaseAmount);
+        const genesisOutputTransaction = new TransactionOutput(publicAddress, this.constants.COINBASE_AMOUNT);
 
         const tx = new Transaction('', [genesisInputTransaction], [genesisOutputTransaction]);
 
@@ -30,8 +34,8 @@ export class TransactionFactory {
     }
 
     public async create(params: ICreateTransactionParams): Promise<Transaction> {
-        if (!this.validationService.validateCreateParameters(params)) {
-            throw new Error('Provided data for creating new transaction is not valid');
+        if (!this.validator.validateCreateParameters(params)) {
+            this.throwException(`Provided transaction data is not valid`);
         }
 
         let senderUTxOuts: UnspentTransactionOutput[] = this.utils
@@ -40,13 +44,13 @@ export class TransactionFactory {
         senderUTxOuts = this.uTxOutsUtils.updateUTxOutsWithNewTxs(senderUTxOuts, params.txPool); // todo the only usage of the foreighn module
 
         if (senderUTxOuts.length === 0) {
-            throw new Error(`Error while creating a new transaction: Sender doesn't have any coins`);
-        }
+            this.throwException(`Sender doesn't have any coins`);
+    }
 
         const uTxOutsMatchingAmount = this.utils.findUTxOutsForAmount(senderUTxOuts, params.amount);
 
         if (uTxOutsMatchingAmount.length === 0) {
-            throw new Error(`Error while creating a new transaction: Sender doesn't have enough coins`);
+            this.throwException(`Sender doesn't have any coins`);
         }
 
         const leftOverAmount: number = this.utils.getLeftOverAmount(uTxOutsMatchingAmount, params.amount);
@@ -65,9 +69,9 @@ export class TransactionFactory {
 
         this.utils.signTxInputs(newTransaction, params.senderPrivateKey, params.uTxOuts);
 
-        const txValid: boolean = this.validationService.validateTxInputs(newTransaction, params.uTxOuts);
+        const txValid: boolean = this.validator.validateTxInputs(newTransaction, params.uTxOuts);
         if (!txValid) {
-            throw new Error(`Create new transaction Error: Not valid`);
+            this.throwException(`Inputs are not valid in tx ${newTransaction.id}`);
         }
 
         return newTransaction;
@@ -83,5 +87,17 @@ export class TransactionFactory {
         outputs.push(new TransactionOutput(recipientAddress, amount));
 
         return outputs;
+    }
+
+    private throwException(message: string): void {
+        const msg: string = this.logError(message);
+        throw new Error(msg);
+    }
+
+    private logError(message: string, extraInfo?: string): string {
+        const extra: string = extraInfo ? (`\n ${extraInfo}`) : '';
+        const msg: string = `Transaction factory error: ${message} ${extra}`;
+        this.logger.error(msg);
+        return msg;
     }
 }

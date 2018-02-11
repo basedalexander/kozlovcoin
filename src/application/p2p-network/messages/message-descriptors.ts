@@ -3,11 +3,13 @@ import { QueryTxPoolP2pMessageDescriptor } from './message-descriptors/query-tx-
 import { QueryAllBlocksP2pMessageDescriptor } from './message-descriptors/query-all-blocks/query-all-blocks.p2p-message-descriptor';
 import { QueryLatestBlockP2pMessageDescriptor } from './message-descriptors/query-latest-block/query-latest-block.p2p-message-descriptor';
 import { ResponseLatestBlockP2pMessageDescriptor } from './message-descriptors/response-latest-block/response-latest-block.p2p-message-descriptor';
+import { ResponseAllBlocksP2pMessageDescriptor } from './message-descriptors/response-all-blocks/response-all-blocks.p2p-message-descriptor';
 
 export const MESSAGE_DESCRIPTORS = [
     ResponseTxPoolP2pMessageDescriptor,
     QueryTxPoolP2pMessageDescriptor,
     QueryAllBlocksP2pMessageDescriptor,
     QueryLatestBlockP2pMessageDescriptor,
-    ResponseLatestBlockP2pMessageDescriptor
+    ResponseLatestBlockP2pMessageDescriptor,
+    ResponseAllBlocksP2pMessageDescriptor
 ];

@@ -18,7 +18,7 @@ export class QueryLatestBlockP2PMessageHandler implements IP2PMessageHandler {
         const latestBlock = await this.node.getLastBlock();
 
         const message = this.messageFactory.createMessage(
-            P2PMessageType.RESPONSE_LATEST_BLOCK,
+            P2PMessageType.RESPONSE_LAST_BLOCK,
             latestBlock
         );
 

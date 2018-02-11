@@ -14,28 +14,21 @@ describe('P2P Network Sync', () => {
     let serverB: IServer;
     let httpServerB;
 
-    let serverC: IServer;
-    let httpServerC;
-
     beforeEach(async () => {
         serverA = await startServer(nodeAConfig);
         httpServerA = serverA.getHttpServerInstance();
 
         serverB = await startServer(nodeBConfig);
         httpServerB = serverB.getHttpServerInstance();
-        //
-        serverC = await startServer(nodeCConfig);
-        httpServerC = serverC.getHttpServerInstance();
     });
 
     afterEach(async () => {
         await stopServer(serverA);
         await stopServer(serverB);
-        await stopServer(serverC);
     });
 
     describe('Peer adding', () => {
-        it('A and B module should add each other in their peer lists when peer NodeB is added to NodeA', async () => {
+        it(`Node_A and Node_B should add each other as peers after NodeB is added to NodeA's peer list`, async () => {
             const nodeBAddress: string = createWsAddressFromConfig(nodeBConfig);
 
             const addPeerToNodeAResult = await request(httpServerA)
@@ -55,14 +48,13 @@ describe('P2P Network Sync', () => {
 
             expect(getNodeAPeersResult.status).toBe(200);
             expect(getNodeAPeersResult.body.data.length).toBe(1);
-            expect(getNodeAPeersResult.body.data[0]).toBe(nodeBAddress);
 
             const getNodeBPeersResult = await request(httpServerB)
                 .get('/peers')
                 .set('Accept', 'application/json');
 
             expect(getNodeBPeersResult.status).toBe(200);
-            expect(typeof getNodeBPeersResult.body.data[0]).toBe('string');
+            expect(getNodeBPeersResult.body.data.length).toBe(1);
         });
     });
 
@@ -101,7 +93,7 @@ describe('P2P Network Sync', () => {
             expect(getNodeATxPoolResult2.status).toBe(200);
             expect(getNodeATxPoolResult2.body.data.length).toBe(1);
 
-            const getNodeBTxPoolResult = await request(httpServerA)
+            const getNodeBTxPoolResult = await request(httpServerB)
                 .get('/tx-pool')
                 .set('Accept', 'application/json');
             expect(getNodeBTxPoolResult.status).toBe(200);
@@ -111,6 +103,55 @@ describe('P2P Network Sync', () => {
             const nodeBPool = JSON.stringify(getNodeBTxPoolResult.body.data);
 
             expect(nodeAPool === nodeBPool).toBe(true);
+        });
+    });
+
+    describe('Peers sync after mining a new block', () => {
+        it(`After node A has mined a new block, block B should update its blockchain, uTxOuts and tx pool`, async () => {
+
+            const nodeBAddress: string = createWsAddressFromConfig(nodeBConfig);
+            const addPeerToNodeAResult = await request(httpServerA)
+                .post('/peer')
+                .set('Accept', 'application/json')
+                .send({
+                    address: nodeBAddress
+                });
+            expect(addPeerToNodeAResult.status).toBe(200);
+
+            const getNodeATxPoolResult = await request(httpServerA)
+                .get('/tx-pool')
+                .set('Accept', 'application/json');
+            expect(getNodeATxPoolResult.status).toBe(200);
+            expect(getNodeATxPoolResult.body.data.length).toBe(0);
+
+            const sendTransactionToNodeAResult = await request(httpServerA)
+                .post('/wallet/transaction')
+                .set('Accept', 'application/json')
+                .send({
+                    recipientPublicKey: accounts.walletA.publicKey,
+                    senderPrivateKey: accounts.creator.privateKey,
+                    senderPublicKey: accounts.creator.publicKey,
+                    amount: 20
+                });
+            expect(sendTransactionToNodeAResult.status).toBe(200);
+
+            const nodeAMineBlockResult = await request(httpServerA)
+                .post('/new-block')
+                .set('Accept', 'application/json');
+            expect(nodeAMineBlockResult.status).toBe(200);
+
+            const nodeALastBlockResponse = await request(httpServerA)
+                .get('/last-block')
+                .set('Accept', 'application/json');
+            expect(nodeALastBlockResponse.status).toBe(200);
+
+            await timer(1000);
+
+            const nodeBLastBlockResponse = await request(httpServerB)
+                .get('/last-block')
+                .set('Accept', 'application/json');
+            expect(nodeBLastBlockResponse.status).toBe(200);
+            expect(nodeBLastBlockResponse.body.data).toMatchObject(nodeALastBlockResponse.body.data);
         });
     });
 });

@@ -17,11 +17,11 @@ export const nodeAConfig = {
 export const nodeBConfig = {
     "server": {
         "host": HOST,
-        "port": 7002
+        "port": 4002
     },
     "p2p": {
         "host": HOST,
-        "port": 7003,
+        "port": 7002,
         "peers": []
     }
 };
@@ -33,7 +33,7 @@ export const nodeCConfig = {
     },
     "p2p": {
         "host": HOST,
-        "port": 6003,
+        "port": 7003,
         "peers": []
     }
 };

@@ -32,7 +32,8 @@ export class NodeManager {
         await this.p2p.addPeer(address);
     }
 
-    async getPeers(): Promise<string[]> {
+    // todo
+    async getPeers(): Promise<any[]> {
         return await this.p2p.getPeers();
     }
 

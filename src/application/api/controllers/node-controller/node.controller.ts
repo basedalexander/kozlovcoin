@@ -11,6 +11,9 @@ import { GetTransactionPoolResponseDto } from './dto/get-transaction-pool-respon
 import { ErrorResponseDTO } from './error-response.dto';
 import { AddPeerDTO } from './dto/add-peer-dto';
 import { GetPeersResponseDto } from './dto/get-peers-response.dto';
+import { GetMinerAddressResponseDto } from './dto/get-miner-address-response.dto';
+import { GetKeyPairResponseDTO } from '../wallet-controller/dto/get-new-key-pair.response.dto';
+import { KeyPair } from '../../../crypto/key-pair';
 
 @ApiUseTags('Node API')
 @ApiResponse({
@@ -123,6 +126,34 @@ export class NodeController {
     @Get('peers')
     async getPeers(@Res() res) {
         const result = await this.nodeManager.getPeers();
+
+        res.json({
+            data: result
+        });
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Returns genesis key pair with which the cryptocurrency was launched',
+        type: GetKeyPairResponseDTO
+    })
+    @Get('genesis-key-pair')
+    async getCreatorKeyPair(@Res() res) {
+        const result: KeyPair = await this.nodeManager.getGenesisKeyPair();
+
+        res.json({
+            data: result
+        });
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Returns public address of miner who runs a node being requested',
+        type: GetMinerAddressResponseDto
+    })
+    @Get('miner-address')
+    async getMinerAddress(@Res() res) {
+        const result = await this.nodeManager.getMinerAddress();
 
         res.json({
             data: result

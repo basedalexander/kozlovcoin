@@ -49,7 +49,7 @@ export class WalletManager {
         return balance;
     }
 
-    async getHistory(address: string): Promise<any[]> {
+    async getTransactions(address: string): Promise<any[]> {
         return [];
     }
 }

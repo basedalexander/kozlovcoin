@@ -6,7 +6,7 @@ export const createCoinbaseTx = (): Transaction => {
     const genesisInputTransaction = new TransactionInput('', 0, '');
     const genesisOutputTransaction = new TransactionOutput('123', 50);
 
-    return new Transaction('1', [genesisInputTransaction], [genesisOutputTransaction]);
+    return new Transaction('1', 0, [genesisInputTransaction], [genesisOutputTransaction]);
 };
 
 export const createTxWith2Outputs = (): Transaction => {
@@ -19,5 +19,5 @@ export const createTxWith2Outputs = (): Transaction => {
         new TransactionOutput('2', 2)
     ];
 
-    return new Transaction('1', inputs, outputs);
+    return new Transaction('1', 0, inputs, outputs);
 };

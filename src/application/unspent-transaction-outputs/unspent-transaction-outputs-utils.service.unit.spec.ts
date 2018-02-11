@@ -223,6 +223,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
                 createCoinbaseTx(),
                 {
                     id: '2',
+                    timeStamp: 0,
                     inputs: [
                         {
                             txOutputId: '1',
@@ -243,6 +244,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
                 },
                 {
                     id: '3',
+                    timeStamp: 0,
                     inputs: [
                         {
                             txOutputId: '2',
@@ -273,6 +275,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
                 createCoinbaseTx(),
                 {
                     id: '2',
+                    timeStamp: 0,
                     inputs: [
                         {
                             txOutputId: '1',
@@ -293,6 +296,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
                 },
                 {
                     id: '3',
+                    timeStamp: 0,
                     inputs: [
                         {
                             txOutputId: '2',
@@ -318,6 +322,7 @@ describe('UnspentTransactionOutputsUtilsService', () => {
             const newTransactions: Transaction[] = [
                 {
                     id: '4',
+                    timeStamp: 0,
                     inputs: [
                         {
                             txOutputId: '2',

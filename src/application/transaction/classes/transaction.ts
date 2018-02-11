@@ -7,6 +7,9 @@ export class Transaction {
     @ApiModelProperty()
     public id: string;
 
+    @ApiModelProperty()
+    public timeStamp: number;
+
     @ApiModelProperty({ type: TransactionInput, isArray: true })
     public inputs: TransactionInput[];
 
@@ -15,10 +18,12 @@ export class Transaction {
 
     constructor(
         id: string,
+        timeStamp,
         inputs: TransactionInput[],
         outputs: TransactionOutput[]
     ) {
         this.id = id;
+        this.timeStamp = timeStamp;
         this.inputs = inputs;
         this.outputs = outputs;
     }

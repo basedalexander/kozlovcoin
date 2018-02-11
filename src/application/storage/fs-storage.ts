@@ -28,7 +28,13 @@ export class FSStorage implements IStorage {
             return null;
         }
 
-        const desirealizedResult = JSON.parse(result);
+        let desirealizedResult;
+
+        try {
+            desirealizedResult = JSON.parse(result);
+        } catch (e) {
+            return null;
+        }
 
         return desirealizedResult;
     }

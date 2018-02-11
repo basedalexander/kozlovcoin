@@ -19,6 +19,12 @@ export class UnspentTransactionOutputs {
         return this.load();
     }
 
+    async update(newBlock: IBlock): Promise<void> {
+        const uTxOuts: UnspentTransactionOutput[] = await this.get();
+        const updatedUTxOuts: UnspentTransactionOutput[] = this.utils.updateUTxOutsWithNewTxs(uTxOuts, newBlock.data);
+        this.save(updatedUTxOuts);
+    }
+
     async isStored(): Promise<boolean> {
         const data = await this.get();
 
@@ -39,19 +45,17 @@ export class UnspentTransactionOutputs {
         await this.save(uTxOuts);
     }
 
-    private async update(newTransactions: Transaction[]): Promise<void> {
-        const uTxOuts: UnspentTransactionOutput[] = await this.get();
-
-        const updatedUTxOuts: UnspentTransactionOutput[] = this.utils.updateUTxOutsWithNewTxs(uTxOuts, newTransactions);
-
-        this.save(updatedUTxOuts);
-    }
-
     private async load(): Promise<UnspentTransactionOutput[]> {
-        return this.storage.get(this.FILE_NAME);
+        let loadResult: UnspentTransactionOutput[] = await this.storage.get(this.FILE_NAME);
+
+        if (!loadResult) {
+            loadResult = [];
+        }
+
+        return loadResult;
     }
 
-    private save(transactions: UnspentTransactionOutput[]): Promise<void> {
-        return this.storage.set(this.FILE_NAME, transactions);
+    private async save(transactions: UnspentTransactionOutput[]): Promise<void> {
+        await this.storage.set(this.FILE_NAME, transactions);
     }
 }

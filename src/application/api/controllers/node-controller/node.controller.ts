@@ -62,6 +62,20 @@ export class NodeController {
 
     @ApiResponse({
         status: HttpStatus.OK,
+        description: 'Mines a new block from existing tx pool transactions and returns it',
+        type: GetLastBlockResponseDTO
+    })
+    @Post('new-block')
+    async mineNewBlock(@Res() res) {
+        const block: IBlock = await this.nodeManager.mineNewBlock();
+
+        res.json({
+            data: block
+        });
+    }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
         description: 'Returns list of unspent transaction outputs',
         type: GetUnspentTxOutputsResponseDto
     })

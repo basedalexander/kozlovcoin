@@ -1,26 +1,29 @@
 import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
 
-import { configuration } from '../../src/system/configuration';
 import { Server } from '../../src/server/server';
+import { IBlock } from '../../src/application/block/block.interface';
 
 describe('Node REST API', async () => {
     let server;
     let httpServer;
 
     beforeAll(async () => {
-        await rimraf(configuration.storagePath);
-
         server = new Server();
 
         await server.init();
+
+        server.config.server.port = 3001;
+        server.config.p2p.port = 6001;
+
+        await rimraf(server.config.storagePath);
 
         await server.start();
 
         httpServer = server.getHttpServerInstance();
     });
 
-    beforeAll(async () => {
+    afterAll(async () => {
         await server.stop();
     });
 
@@ -83,6 +86,43 @@ describe('Node REST API', async () => {
 
                 expect(res.body.data).toBeTruthy();
                 expect(res.body.data.length).toBe(0);
+            });
+        });
+    });
+
+    describe('/new-block', () => {
+        describe('POST', async () => {
+            let newBlock: IBlock;
+
+            it('Should mine a new block with existing in tx pool transactions and return it', async () => {
+                const res = await request(httpServer)
+                    .post('/new-block')
+                    .set('Accept', 'application/json');
+
+                expect(res.status).toBe(200);
+                expect(typeof res.body.data.index).toBe('number');
+                expect(typeof res.body.data.hash).toBe('string');
+
+                newBlock = res.body.data;
+            });
+
+            it(`Should also properly update blockchain`, async () => {
+                const res = await request(httpServer)
+                    .get('/last-block')
+                    .set('Accept', 'application/json');
+
+                expect(res.status).toBe(200);
+                expect(res.body.data.index).toBe(newBlock.index);
+                expect(res.body.data.hash).toBe(newBlock.hash);
+            });
+
+            it(`Should also properly update unspent-tx-outputs`, async () => {
+                const res = await request(httpServer)
+                    .get('/unspent-tx-outputs')
+                    .set('Accept', 'application/json');
+
+                expect(res.status).toBe(200);
+                expect(res.body.data.length).toBe(2);
             });
         });
     });

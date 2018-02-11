@@ -3,8 +3,6 @@ import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
 
 // tslint:disable
-const config = require('../../config/local-config.json');
-import { configuration } from "../../src/system/configuration";
 import { Server } from '../../src/server/server';
 
 describe('Wallet REST API', async () => {
@@ -12,17 +10,21 @@ describe('Wallet REST API', async () => {
     let httpServer;
 
     beforeAll(async () => {
-        await rimraf(configuration.storagePath);
         server = new Server();
 
         await server.init();
+
+        server.config.server.port = 3002;
+        server.config.p2p.port = 6002;
+
+        await rimraf(server.config.storagePath);
 
         await server.start();
 
         httpServer = server.getHttpServerInstance();
     });
 
-    beforeAll(async () => {
+    afterAll(async () => {
        await server.stop();
     });
 
@@ -30,7 +32,7 @@ describe('Wallet REST API', async () => {
         describe('GET', () => {
             it('should return number of coins owned by given address', async () => {
                 const res = await request(httpServer)
-                    .get(`/wallet/balance/${config.creatorPublicAddress}`)
+                    .get(`/wallet/balance/${server.config.creatorPublicAddress}`)
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBe(50);
@@ -58,15 +60,15 @@ describe('Wallet REST API', async () => {
                         .set('Accept', 'application/json')
                         .send({
                             recipientPublicKey: recipientPublicKey,
-                            senderPublicKey: config.creatorPublicAddress,
-                            senderPrivateKey: config.creatorPrivateAddress,
+                            senderPublicKey: server.config.creatorPublicAddress,
+                            senderPrivateKey: server.config.creatorPrivateAddress,
                             amount: 20
                         });
 
                     expect(res.status).toBe(HttpStatus.OK);
                     expect(res.body).toBeTruthy();
 
-                    expect(res.body.data.outputs[0].address).toBe(config.creatorPublicAddress);
+                    expect(res.body.data.outputs[0].address).toBe(server.config.creatorPublicAddress);
                     expect(res.body.data.outputs[0].amount).toBe(30);
 
                     expect(res.body.data.outputs[1].address).toBe(recipientPublicKey);
@@ -81,7 +83,7 @@ describe('Wallet REST API', async () => {
                         .set('Accept', 'application/json')
                         .send({
                             recipientPublicKey: recipientPublicKey,
-                            senderPublicKey: config.creatorPublicAddress,
+                            senderPublicKey: server.config.creatorPublicAddress,
                             senderPrivateKey: 'wrongKey',
                             amount: 20
                         });
@@ -98,7 +100,7 @@ describe('Wallet REST API', async () => {
                         .send({
                             recipientPublicKey: recipientPublicKey,
                             senderPublicKey: 'bla',
-                            senderPrivateKey: config.creatorPrivateAddress,
+                            senderPrivateKey: server.config.creatorPrivateAddress,
                             amount: 20
                         });
 
@@ -114,8 +116,8 @@ describe('Wallet REST API', async () => {
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: 123,
-                                senderPublicKey: config.creatorPublicAddress,
-                                senderPrivateKey: config.creatorPrivateAddress,
+                                senderPublicKey: server.config.creatorPublicAddress,
+                                senderPrivateKey: server.config.creatorPrivateAddress,
                                 amount: 20
                             });
 
@@ -130,7 +132,7 @@ describe('Wallet REST API', async () => {
                             .send({
                                 recipientPublicKey: '123',
                                 senderPublicKey: 123,
-                                senderPrivateKey: config.creatorPrivateAddress,
+                                senderPrivateKey: server.config.creatorPrivateAddress,
                                 amount: 20
                             });
 
@@ -144,7 +146,7 @@ describe('Wallet REST API', async () => {
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: '123',
-                                senderPublicKey: config.creatorPublicAddress,
+                                senderPublicKey: server.config.creatorPublicAddress,
                                 senderPrivateKey: 123,
                                 amount: 20
                             });
@@ -159,8 +161,8 @@ describe('Wallet REST API', async () => {
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: '123',
-                                senderPublicKey: config.creatorPublicAddress,
-                                senderPrivateKey: config.creatorPrivateAddress,
+                                senderPublicKey: server.config.creatorPublicAddress,
+                                senderPrivateKey: server.config.creatorPrivateAddress,
                                 amount: '234'
                             });
 

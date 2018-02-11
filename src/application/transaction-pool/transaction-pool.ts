@@ -31,4 +31,8 @@ export class TransactionPool {
     async get(): Promise<Transaction[]> {
         return this.transactions;
     }
+
+    async clear(): Promise<void> {
+        this.transactions = [];
+    }
 }

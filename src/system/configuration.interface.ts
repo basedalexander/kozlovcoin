@@ -1,8 +1,11 @@
 export interface IConfiguration {
+    creatorPublicAddress: string;
+    creatorPrivateAddress;
+    minerPublicAddress: string;
+
     rootPath: string;
     server: IServerConfiguration;
     p2p: IP2PConfiguration;
-    creatorPublicAddress: string;
     storagePath: string;
 }
 

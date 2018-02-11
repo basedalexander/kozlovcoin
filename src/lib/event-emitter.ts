@@ -1,11 +1,11 @@
-export class EventEmitter {
+export class EventEmitter<T> {
     private listeners = [];
 
-    subscribe(listener) {
+    public subscribe(listener): void  {
         this.listeners.push(listener);
     }
 
-    unsubscribe(listener) {
+    public unsubscribe(listener): void {
         const index = this.listeners.indexOf(listener);
 
         if (index !== -1) {
@@ -13,7 +13,7 @@ export class EventEmitter {
         }
     }
 
-    emit(data) {
+    public emit(data: T): void {
         this.listeners.forEach(listener => listener(data));
     }
 }

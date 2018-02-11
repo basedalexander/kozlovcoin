@@ -1,8 +1,8 @@
-import { StagingLogger } from './logger/lib/staging-logger';
 import { Module } from '@nestjs/common';
 import { EnvironmentModule } from './environment/environment.module';
 import { LoggerModule } from './logger/lib/logger.module';
 import { Configuration } from './configuration';
+import { SystemConstants } from './system-constants';
 
 @Module({
     modules: [
@@ -10,12 +10,14 @@ import { Configuration } from './configuration';
         LoggerModule
     ],
     components: [
-        Configuration
+        Configuration,
+        SystemConstants
     ],
     exports: [
         EnvironmentModule,
         LoggerModule,
-        Configuration
+        Configuration,
+        SystemConstants
     ]
 })
 export class SystemModule {

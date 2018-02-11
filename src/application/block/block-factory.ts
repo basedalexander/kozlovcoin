@@ -2,6 +2,7 @@ import { Component } from '@nestjs/common';
 import { IBlock } from './block.interface';
 import { Block } from './block';
 import { BlockUtilsService } from './block-utils.service';
+import { Transaction } from '../transaction/classes/transaction';
 
 @Component()
 export class BlockFactory {
@@ -24,5 +25,28 @@ export class BlockFactory {
         block.hash = this.utils.calcHashForBlock(block);
 
         return block;
+    }
+
+    public createNew(
+        blockData: Transaction[],
+        blockchain: IBlock[],
+        difficultyInterval: number,
+        difficultyAdjastmentInterval: number): IBlock {
+
+        const difficulty: number = this.utils.getDifficulty(blockchain, difficultyInterval, difficultyAdjastmentInterval);
+
+        const lastBlock: IBlock = blockchain[blockchain.length - 1];
+        const newBlockIndex: number = lastBlock.index + 1;
+        const timeStamp: number = this.utils.getCurrentTimesStamp();
+
+        const newBlock: IBlock = this.utils.mineBlock(
+            newBlockIndex,
+            lastBlock.hash,
+            timeStamp,
+            blockData,
+            difficulty
+        );
+
+        return newBlock;
     }
 }

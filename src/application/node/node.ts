@@ -11,29 +11,31 @@ import { TransactionFactory } from '../transaction/transaction-factory/transacti
 import { Transaction } from '../transaction/classes/transaction';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
 import { BlockFactory } from '../block/block-factory';
+import { MiningHelpersService } from './mining-helpers.service';
+import { SystemConstants } from '../../system/system-constants';
+import { BlockValidatorService } from '../block/block-validator.service';
 
 @Component()
 export class Node {
-    public blockMined: EventEmitter = new EventEmitter();
-    public newTransaction = new EventEmitter();
-    public txPoolUpdate = new EventEmitter();
+    public blockMined: EventEmitter<IBlock> = new EventEmitter();
+    public txPoolUpdate: EventEmitter<Transaction[]> = new EventEmitter();
 
-    private TRANSACTIONS_PER_BLOCK_LIMIT = 2;
-    private BLOCK_GENERATION_INTERVAL = 10;
-    private DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
-    private COINBASE_AMOUNT = 50;
+    constructor(
+        private config: Configuration,
+        private constants: SystemConstants,
 
-    constructor(private config: Configuration,
-                @Inject(TLogger) private logger: ILogger,
-                private blockchain: Blockchain,
-                private unspentTxOutputs: UnspentTransactionOutputs,
-                private transactionPool: TransactionPool,
-                private transactionFactory: TransactionFactory,
-                private blockFactory: BlockFactory) {
+        private blockchain: Blockchain,
+        private unspentTxOutputs: UnspentTransactionOutputs,
+        private transactionPool: TransactionPool,
 
-        this.blockMined = new EventEmitter();
-        this.newTransaction = new EventEmitter();
-        this.txPoolUpdate = new EventEmitter();
+        private blockFactory: BlockFactory,
+        private transactionFactory: TransactionFactory,
+        private miningHelper: MiningHelpersService,
+
+        private blockValidator: BlockValidatorService,
+        @Inject(TLogger) private logger: ILogger
+    ) {
+
     }
 
     async addTransaction(tx: Transaction): Promise<void> {
@@ -42,6 +44,53 @@ export class Node {
 
         const pool = await this.getTxPool();
         this.txPoolUpdate.emit(pool);
+    }
+
+    async addNewBlock(block: IBlock): Promise<void> {
+        await this.blockchain.addBlock(block);
+    }
+
+    // TODO move parameter initializations on factory side
+    async mineNewBlock(): Promise<IBlock> {
+        const lastBlock: IBlock = await this.blockchain.getLastBlock();
+        const nextBlockIndex: number = lastBlock.index + 1;
+        const coinbaseTx: Transaction = this.transactionFactory.createCoinbase(this.config.minerPublicAddress, nextBlockIndex);
+
+        const txPool: Transaction[] = await this.getTxPool();
+        const blockData: Transaction[] = [coinbaseTx].concat(txPool);
+        const blockchain: IBlock[] = await this.getBlocks();
+
+        const newBlock = this.blockFactory.createNew(
+            blockData,
+            blockchain,
+            this.constants.BLOCK_GENERATION_INTERVAL,
+            this.constants.DIFFICULTY_ADJUSTMENT_INTERVAL
+        );
+
+        await this.blockchain.addBlock(newBlock);
+
+        await this.unspentTxOutputs.update(newBlock);
+        await this.transactionPool.clear();
+
+        this.blockMined.emit(newBlock);
+
+        return newBlock;
+    }
+
+    async handleRecievedChain(chain: IBlock[]): Promise<void> {
+        this.logger.info(`Handling received chain ...`);
+
+        if (!this.blockValidator.validateChain(chain)) {
+            this.logger.error(`Received chain is not valid, ignoring`);
+            return;
+        }
+
+        const ourLastBlock: IBlock = await this.getLastBlock();
+
+        if (chain[chain.length - 1].index > ourLastBlock.index) {
+            this.logger.info(`Received chain that is valid and longer that existing chain, replacing`);
+            await this.blockchain.set(chain);
+        }
     }
 
     async getUnspentTxOutputs(): Promise<UnspentTransactionOutput[]> {
@@ -54,7 +103,7 @@ export class Node {
 
     async init() {
         if (!await this.blockchain.isStored()) {
-            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, this.COINBASE_AMOUNT);
+            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, 0);
             const genesisBlock = this.blockFactory.createGenesis(genesisTx);
 
             await this.blockchain.addBlock(genesisBlock);
@@ -71,6 +120,6 @@ export class Node {
     }
 
     public async getLastBlock(): Promise<IBlock> {
-        return this.blockchain.getLatestBlock();
+        return this.blockchain.getLastBlock();
     }
 }

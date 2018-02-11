@@ -8,6 +8,8 @@ import { ILogger, TLogger } from '../../system/logger/interfaces/logger.interfac
 import { BlockValidatorService } from '../block/block-validator.service';
 import { P2PMessageType } from '../p2p-network/messages/interfaces/p2p-message-type';
 import { P2PMessageFactory } from '../p2p-network/messages/p2p-message-factory';
+import { UnspentTransactionOutputs } from '../unspent-transaction-outputs/unspent-transaction-outputs';
+import { TransactionPool } from '../transaction-pool/transaction-pool';
 
 @Component()
 export class NodeManager {
@@ -16,7 +18,9 @@ export class NodeManager {
         private p2p: P2PNetwork,
         @Inject(TLogger) private logger: ILogger,
         private blockValidator: BlockValidatorService,
-        private messageFactory: P2PMessageFactory
+        private messageFactory: P2PMessageFactory,
+        private unTxOuts: UnspentTransactionOutputs,
+        private txPool: TransactionPool
     ) { }
 
     async getBlocks(): Promise<IBlock[]> {
@@ -59,6 +63,8 @@ export class NodeManager {
         if (block.index > heldLastBlock.index) {
             if (block.previousBlockHash === heldLastBlock.hash) {
                 await this.node.addNewBlock(block);
+                await this.unTxOuts.update(block);
+                await this.txPool.clear(); // todo should not be cleared, but rather updated
 
                 const msg = this.messageFactory.createMessage(
                     P2PMessageType.RESPONSE_LAST_BLOCK,

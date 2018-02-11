@@ -152,6 +152,24 @@ describe('P2P Network Sync', () => {
                 .set('Accept', 'application/json');
             expect(nodeBLastBlockResponse.status).toBe(200);
             expect(nodeBLastBlockResponse.body.data).toMatchObject(nodeALastBlockResponse.body.data);
+
+            const nodeBTxPoolResponse = await request(httpServerB)
+                .get('/tx-pool')
+                .set('Accept', 'application/json');
+            expect(nodeBTxPoolResponse.status).toBe(200);
+            expect(nodeBTxPoolResponse.body.data.length).toBe(0);
+
+            const nodeAUTxResponse = await request(httpServerA)
+                .get('/unspent-tx-outputs')
+                .set('Accept', 'application/json');
+            expect(nodeAUTxResponse.status).toBe(200);
+
+            const nodeBUTxResponse = await request(httpServerB)
+                .get('/unspent-tx-outputs')
+                .set('Accept', 'application/json');
+            expect(nodeBTxPoolResponse.status).toBe(200);
+
+            expect(JSON.stringify(nodeAUTxResponse.body.data)).toBe(JSON.stringify(nodeBUTxResponse.body.data));
         });
     });
 });

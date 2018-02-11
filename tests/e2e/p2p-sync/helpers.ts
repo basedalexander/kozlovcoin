@@ -19,8 +19,8 @@ export const startServer = async (config): Promise<IServer> => {
     server.config.p2p.port = config.p2p.port;
     server.config.p2p.peers = config.p2p.peers;
 
-    server.config.creatorPrivateAddress = accounts.creator.privateKey;
-    server.config.creatorPublicAddress = accounts.creator.publicKey;
+    server.config.genesisPrivateKey = accounts.creator.privateKey;
+    server.config.genesisPublicKey = accounts.creator.publicKey;
 
     await server.start();
 

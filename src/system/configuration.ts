@@ -6,9 +6,9 @@ import { EnvType } from './environment/environment.interface';
 
 @Component()
 export class Configuration implements IConfiguration {
-    public creatorPublicAddress: string;
-    public creatorPrivateAddress: string;
-    public minerPublicAddress: string;
+    public genesisPublicKey: string;
+    public genesisPrivateKey: string;
+    public minerPublicKey: string;
 
     public rootPath: string;
     public server: IServerConfiguration;
@@ -26,9 +26,9 @@ export class Configuration implements IConfiguration {
     }
     
     public applyConfig(config: IConfiguration): void {
-        this.creatorPublicAddress = config.creatorPublicAddress;
-        this.creatorPrivateAddress = config.creatorPrivateAddress;
-        this.minerPublicAddress = config.minerPublicAddress;
+        this.genesisPublicKey = config.genesisPublicKey;
+        this.genesisPrivateKey = config.genesisPrivateKey;
+        this.minerPublicKey = config.minerPublicKey;
 
         this.rootPath = path.join(__dirname, '../../', config.rootPath);
         this.server = {

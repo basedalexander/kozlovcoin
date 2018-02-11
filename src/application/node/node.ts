@@ -54,7 +54,7 @@ export class Node {
     async mineNewBlock(): Promise<IBlock> {
         const lastBlock: IBlock = await this.blockchain.getLastBlock();
         const nextBlockIndex: number = lastBlock.index + 1;
-        const coinbaseTx: Transaction = this.transactionFactory.createCoinbase(this.config.minerPublicAddress, nextBlockIndex);
+        const coinbaseTx: Transaction = this.transactionFactory.createCoinbase(this.config.minerPublicKey, nextBlockIndex);
 
         const txPool: Transaction[] = await this.getTxPool();
         const blockData: Transaction[] = [coinbaseTx].concat(txPool);
@@ -103,7 +103,7 @@ export class Node {
 
     async init() {
         if (!await this.blockchain.isStored()) {
-            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.creatorPublicAddress, 0);
+            const genesisTx: Transaction = this.transactionFactory.createCoinbase(this.config.genesisPublicKey, 0);
             const genesisBlock = this.blockFactory.createGenesis(genesisTx);
 
             await this.blockchain.addBlock(genesisBlock);

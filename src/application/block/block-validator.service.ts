@@ -39,7 +39,7 @@ export class BlockValidatorService {
             return false;
         }
 
-        const coinbaseTx: Transaction = this.txFactory.createCoinbase(this.config.creatorPublicAddress, 0);
+        const coinbaseTx: Transaction = this.txFactory.createCoinbase(this.config.genesisPublicKey, 0);
         const realGenesisBlock: IBlock = this.blockFactory.createGenesis(coinbaseTx);
 
         const serializedRealGenesisBlock: string = JSON.stringify(realGenesisBlock);

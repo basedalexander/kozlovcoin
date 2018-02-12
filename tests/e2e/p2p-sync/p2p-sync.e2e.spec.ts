@@ -3,7 +3,7 @@
 import { IServer } from '../../../src/server/server.interface';
 import * as request from 'supertest';
 import { timer } from '../../helpers/misc';
-import accounts from './test-accounts';
+import accounts from '../../helpers/test-accounts';
 import { nodeAConfig, nodeBConfig, nodeCConfig } from './node-configs';
 import { startServer, stopServer, createWsAddressFromConfig } from './helpers';
 
@@ -81,8 +81,8 @@ describe('P2P Network Sync', () => {
                 .set('Accept', 'application/json')
                 .send({
                     recipientPublicKey: accounts.walletA.publicKey,
-                    senderPrivateKey: accounts.creator.privateKey,
-                    senderPublicKey: accounts.creator.publicKey,
+                    senderPrivateKey: accounts.genesis.privateKey,
+                    senderPublicKey: accounts.genesis.publicKey,
                     amount: 20
                 });
             expect(sendTransactionToNodeAResult.status).toBe(200);
@@ -129,8 +129,8 @@ describe('P2P Network Sync', () => {
                 .set('Accept', 'application/json')
                 .send({
                     recipientPublicKey: accounts.walletA.publicKey,
-                    senderPrivateKey: accounts.creator.privateKey,
-                    senderPublicKey: accounts.creator.publicKey,
+                    senderPrivateKey: accounts.genesis.privateKey,
+                    senderPublicKey: accounts.genesis.publicKey,
                     amount: 20
                 });
             expect(sendTransactionToNodeAResult.status).toBe(200);

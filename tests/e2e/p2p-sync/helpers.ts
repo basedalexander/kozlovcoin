@@ -1,6 +1,6 @@
 import { IServer } from '../../../src/server/server.interface';
 import { Server } from '../../../src/server/server';
-import accounts from './test-accounts';
+import accounts from '../../helpers/test-accounts';
 
 export const createWsAddressFromConfig = (config): string => {
     return `ws://${config.p2p.host}:${config.p2p.port}`;
@@ -19,8 +19,8 @@ export const startServer = async (config): Promise<IServer> => {
     server.config.p2p.port = config.p2p.port;
     server.config.p2p.peers = config.p2p.peers;
 
-    server.config.genesisPrivateKey = accounts.creator.privateKey;
-    server.config.genesisPublicKey = accounts.creator.publicKey;
+    server.config.genesisPrivateKey = accounts.genesis.privateKey;
+    server.config.genesisPublicKey = accounts.genesis.publicKey;
 
     await server.start();
 

@@ -4,6 +4,7 @@ import { NodeModule } from '../node/node.module';
 import { WalletManager } from './wallet.manager';
 import { CryptoModule } from '../crypto/crypto.module';
 import { SystemModule } from '../../system/system.module';
+import { TransactionConverterService } from './transaction-coverter/transaction-converter.service';
 
 @Module({
     imports: [
@@ -13,7 +14,8 @@ import { SystemModule } from '../../system/system.module';
         SystemModule
     ],
     components: [
-        WalletManager
+        WalletManager,
+        TransactionConverterService
     ],
     exports: [
         WalletManager

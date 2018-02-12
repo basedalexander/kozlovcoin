@@ -28,6 +28,10 @@ export class TransactionUtilsService {
         return this.crypto.createSHA256Hash(id);
     }
 
+    public isCoinbaseTx(transaction: Transaction): boolean {
+        return (transaction.inputs.length === 1) && (transaction.inputs[0].txOutputId === '');
+    }
+
     public findUTxOutsForAmount(uTxOuts: UnspentTransactionOutput[], amount: number): UnspentTransactionOutput[] {
         let currentAmount = 0;
         let includedUTxOutputs = [];

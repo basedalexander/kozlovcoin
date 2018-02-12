@@ -1,5 +1,7 @@
 Blockchain Node with Wallet API implementation in Javascript
 
+Use [Kozlovcoin Wallet](https://github.com/thohoh/kozlovcoin-wallet) to test the system.
+
 [![Build Status](https://travis-ci.org/thohoh/kozlovcoin.svg?branch=master)](https://travis-ci.org/thohoh/kozlovcoin)
 
 ### Run locally

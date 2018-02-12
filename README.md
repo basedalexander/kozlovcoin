@@ -19,4 +19,4 @@ docker run -d -p 3008:3008 --name kozlovcoin thohoh/kozlovcoin
 
 
 ### Open api docs 
-[https://localhost:3008/docs](http://localhost:3008/docs)
+[http://localhost:3008/docs](http://localhost:3008/docs)

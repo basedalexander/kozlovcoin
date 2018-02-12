@@ -14,7 +14,7 @@
     "compose-up": "docker-compose up",
     "unit": "jest --config=jest.unit.config.js",
     "unit-watch": "jest --config=jest.unit.config.js --watch",
-    "e2e": "ENV_MODE=test PORT=4000 jest --config=jest.e2e.config.js",
+    "e2e": "PORT=4000 jest --config=jest.e2e.config.js",
     "e2e-watch": "ENV_MODE=test PORT=4000 jest --config=jest.e2e.config.js --watch"
   },
   "author": "",

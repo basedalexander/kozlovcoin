@@ -71,7 +71,7 @@ export class TransactionFactory {
 
         this.utils.signTxInputs(newTransaction, params.senderPrivateKey, params.uTxOuts);
 
-        const txValid: boolean = this.validator.validateTxInputs(newTransaction, params.uTxOuts);
+        const txValid: boolean = this.validator.validateTxInputs(newTransaction, senderUTxOuts);
         if (!txValid) {
             this.throwException(`Inputs are not valid in tx ${newTransaction.id}`);
         }

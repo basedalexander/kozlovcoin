@@ -1,4 +1,4 @@
-export interface ICreateTransactionParamsInterface {
+export interface ICreateTransactionParams {
     recipientPublicKey: string;
     senderPublicKey: string;
     senderPrivateKey: string;

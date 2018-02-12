@@ -1,8 +1,8 @@
 import { ApiModelProperty } from '@nestjs/swagger';
-import { ICreateTransactionParamsInterface } from '../../../../wallet/create-transaction-params.interface';
+import { ICreateTransactionParams } from '../../../../wallet/create-transaction-params.interface';
 import { IsNumber, IsString } from 'class-validator';
 
-export class MakeTransactionDto implements ICreateTransactionParamsInterface {
+export class MakeTransactionDto implements ICreateTransactionParams {
 
     @ApiModelProperty()
     @IsString()

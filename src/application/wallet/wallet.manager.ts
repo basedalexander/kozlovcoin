@@ -3,20 +3,24 @@ import { Transaction } from '../transaction/classes/transaction';
 import { TransactionFactory } from '../transaction/transaction-factory/transaction-factory';
 import { Node } from '../node/node';
 import { UnspentTransactionOutput } from '../transaction/classes/unspent-transaction-output';
-import { ICreateTransactionParamsInterface } from './create-transaction-params.interface';
+import { ICreateTransactionParams } from './create-transaction-params.interface';
 import { CryptoService } from '../crypto/crypto.service';
 import { KeyPair } from '../crypto/key-pair';
+import { IBlock } from '../block/block.interface';
+import { ITransactionReport, TransactionConverterService } from './transaction-coverter/transaction-converter.service';
 
 @Component()
 export class WalletManager {
-    constructor(private transactionFactory: TransactionFactory,
-                private node: Node,
-                private crypto: CryptoService
+    constructor(
+        private transactionFactory: TransactionFactory,
+        private node: Node,
+        private crypto: CryptoService,
+        private txConverter: TransactionConverterService
     ) {
 
     }
 
-    async createTransaction(params: ICreateTransactionParamsInterface): Promise<Transaction> {
+    async createTransaction(params: ICreateTransactionParams): Promise<Transaction> {
         const txPool: Transaction[] = await this.node.getTxPool();
         const uTxOuts: UnspentTransactionOutput[] = await this.node.getUnspentTxOutputs();
 
@@ -50,6 +54,15 @@ export class WalletManager {
     }
 
     async getTransactions(address: string): Promise<any[]> {
-        return [];
+        const chain: IBlock[] = await this.node.getBlocks();
+        const chainTxs: Transaction[] = chain
+            .map(b => b.data)
+            .reduce((a, b) => a.concat(b), []);
+
+        const pool: Transaction[] = await this.node.getTxPool();
+
+        const transactions: ITransactionReport[] = this.txConverter.convertForTxReportsForAddress(chainTxs, pool, address);
+
+        return transactions;
     }
 }

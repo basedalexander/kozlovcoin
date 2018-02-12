@@ -1,7 +1,7 @@
 export interface IConfiguration {
-    creatorPublicAddress: string;
-    creatorPrivateAddress;
-    minerPublicAddress: string;
+    genesisPublicKey: string;
+    genesisPrivateKey;
+    minerPublicKey: string;
 
     rootPath: string;
     server: IServerConfiguration;

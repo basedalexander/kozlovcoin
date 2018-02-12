@@ -26,7 +26,7 @@ export class TransactionFactory {
         const genesisInputTransaction = new TransactionInput('', blockIndex, '');
         const genesisOutputTransaction = new TransactionOutput(publicAddress, this.constants.COINBASE_AMOUNT);
 
-        const tx = new Transaction('', [genesisInputTransaction], [genesisOutputTransaction]);
+        const tx = new Transaction('', 0, [genesisInputTransaction], [genesisOutputTransaction]);
 
         tx.id = this.utils.calcTransactionId(tx);
 
@@ -64,7 +64,9 @@ export class TransactionFactory {
             leftOverAmount
         );
 
-        const newTransaction = new Transaction('', inputs, outputs);
+        const timeStamp: number = this.utils.getCurrentTimeStamp();
+
+        const newTransaction = new Transaction('', timeStamp, inputs, outputs);
         newTransaction.id = this.utils.calcTransactionId(newTransaction);
 
         this.utils.signTxInputs(newTransaction, params.senderPrivateKey, params.uTxOuts);

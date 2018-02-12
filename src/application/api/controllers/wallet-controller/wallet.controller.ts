@@ -6,7 +6,7 @@ import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { WalletManager } from '../../../wallet/wallet.manager';
 import { MakeTransactionDto } from './dto/create-transaction.dto';
 import { Transaction } from '../../../transaction/classes/transaction';
-import { GetNewKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
+import { GetKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
 import { MakeTransactionResponseDto } from './dto/create-transaction-response.dto';
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';
 import { GetHistoryResponseDTO } from './dto/get-history-response.dto';
@@ -55,7 +55,7 @@ export class WalletController {
     @ApiResponse({
         status: HttpStatus.OK,
         description: 'Returns newly generated pair of keys',
-        type: GetNewKeyPairResponseDTO
+        type: GetKeyPairResponseDTO
     })
     @Get('new-key-pair')
     async generateKeyPair(@Res() res) {
@@ -71,10 +71,10 @@ export class WalletController {
         description: 'Returns current balance for provided address',
         type: GetBalanceResponseDTO
     })
-    @Get('balance/:address')
-    async getBalance(@Param('address') address: string, @Res() res) {
+    @Get('balance/:publicKey')
+    async getBalance(@Param('publicKey') publicKey: string, @Res() res) {
 
-        const balance: number = await this.manager.getBalance(address);
+        const balance: number = await this.manager.getBalance(publicKey);
 
         res.json({
             data: balance
@@ -83,13 +83,13 @@ export class WalletController {
 
     @ApiResponse({
         status: HttpStatus.OK,
-        description: 'NOT IMPLEMENTED. Returns history of sent and received transactions for given address',
+        description: 'Returns history of transactions for given public key',
         type: GetHistoryResponseDTO
     })
-    @Get('history/:address')
-    async getHistory(@Param('address') address: string, @Res() res) {
+    @Get('transactions/:publicKey')
+    async getHistory(@Param('publicKey') publicKey: string, @Res() res) {
 
-        const result: any[] = await this.manager.getHistory(address);
+        const result: any[] = await this.manager.getTransactions(publicKey);
 
         res.json({
             data: result

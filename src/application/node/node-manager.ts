@@ -10,6 +10,8 @@ import { P2PMessageType } from '../p2p-network/messages/interfaces/p2p-message-t
 import { P2PMessageFactory } from '../p2p-network/messages/p2p-message-factory';
 import { UnspentTransactionOutputs } from '../unspent-transaction-outputs/unspent-transaction-outputs';
 import { TransactionPool } from '../transaction-pool/transaction-pool';
+import { Configuration } from '../../system/configuration';
+import { KeyPair } from '../crypto/key-pair';
 
 @Component()
 export class NodeManager {
@@ -20,7 +22,8 @@ export class NodeManager {
         private blockValidator: BlockValidatorService,
         private messageFactory: P2PMessageFactory,
         private unTxOuts: UnspentTransactionOutputs,
-        private txPool: TransactionPool
+        private txPool: TransactionPool,
+        private config: Configuration
     ) { }
 
     async getBlocks(): Promise<IBlock[]> {
@@ -46,6 +49,14 @@ export class NodeManager {
     // todo
     async getPeers(): Promise<any[]> {
         return await this.p2p.getPeers();
+    }
+
+    async getMinerAddress(): Promise<string> {
+        return this.config.minerPublicKey;
+    }
+
+    async getGenesisKeyPair(): Promise<KeyPair> {
+        return new KeyPair(this.config.genesisPrivateKey, this.config.genesisPublicKey);
     }
 
     async mineNewBlock(): Promise<IBlock> {

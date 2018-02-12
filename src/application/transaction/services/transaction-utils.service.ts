@@ -23,7 +23,7 @@ export class TransactionUtilsService {
             .map((txOutput) => txOutput.address + txOutput.amount)
             .reduce((a, b) => a + b, '');
 
-        const id = `${txInContent}${txOutContent}`;
+        const id = `${tx.timeStamp}${txInContent}${txOutContent}`;
 
         return this.crypto.createSHA256Hash(id);
     }
@@ -104,6 +104,10 @@ export class TransactionUtilsService {
         tx.inputs.forEach(txInput => {
             txInput.signature = this.crypto.signMessage(tx.id, privateKey);
         });
+    }
+
+    public getCurrentTimeStamp(): number {
+        return Date.now();
     }
 
     private findUTxOutByTxIn(txInput: TransactionInput, uTxOuts: UnspentTransactionOutput[]): UnspentTransactionOutput {

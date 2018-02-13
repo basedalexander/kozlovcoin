@@ -14,6 +14,7 @@ import { BlockFactory } from '../block/block-factory';
 import { MiningHelpersService } from './mining-helpers.service';
 import { SystemConstants } from '../../system/system-constants';
 import { BlockValidatorService } from '../block/block-validator.service';
+import { Scheduler } from './scheduler';
 
 @Component()
 export class Node {
@@ -33,7 +34,8 @@ export class Node {
         private miningHelper: MiningHelpersService,
 
         private blockValidator: BlockValidatorService,
-        @Inject(TLogger) private logger: ILogger
+        @Inject(TLogger) private logger: ILogger,
+        private scheduler: Scheduler
     ) {
 
     }
@@ -48,6 +50,7 @@ export class Node {
 
     async addNewBlock(block: IBlock): Promise<void> {
         await this.blockchain.addBlock(block);
+        this.resetAutomining();
     }
 
     // TODO move parameter initializations on factory side
@@ -73,6 +76,8 @@ export class Node {
         await this.transactionPool.clear();
 
         this.blockMined.emit(newBlock);
+
+        this.resetAutomining();
 
         return newBlock;
     }
@@ -113,6 +118,24 @@ export class Node {
             const blocks: IBlock[] = await this.blockchain.get();
             await this.unspentTxOutputs.init(blocks);
         }
+
+        this.initAutomining();
+    }
+
+    public initAutomining(): void {
+        this.scheduler.subscribe(() => {
+            this.actOnSchedule();
+        });
+
+        this.scheduler.start();
+    }
+
+    public resetAutomining(): void {
+        this.scheduler.reset();
+    }
+
+    public stopAutomining(): void {
+        this.scheduler.stop();
     }
 
     public async getBlocks(): Promise<IBlock[]> {
@@ -121,5 +144,13 @@ export class Node {
 
     public async getLastBlock(): Promise<IBlock> {
         return this.blockchain.getLastBlock();
+    }
+
+    private async actOnSchedule(): Promise<void> {
+        const txPool: Transaction[] = await this.getTxPool();
+
+        if (txPool.length) {
+            this.mineNewBlock();
+        }
     }
 }

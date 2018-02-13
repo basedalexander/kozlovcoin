@@ -10,6 +10,7 @@ import { TransactionModule } from '../transaction/transaction.module';
 import { P2P_PROVIDERS } from '../p2p-network/p2p-providers';
 import { Node } from './node';
 import { MiningHelpersService } from './mining-helpers.service';
+import { Scheduler } from './scheduler';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { MiningHelpersService } from './mining-helpers.service';
     components: [
         Node,
         NodeManager,
+        Scheduler,
         MiningHelpersService,
         ...P2P_PROVIDERS
     ],

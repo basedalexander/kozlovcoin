@@ -1,5 +1,8 @@
 import { Component } from '@nestjs/common';
 import { Transaction } from '../../transaction/classes/transaction';
+import { TransactionUtilsService } from '../../transaction/services/transaction-utils.service';
+import { TransactionOutput } from '../../transaction/classes/transaction-output';
+import { TransactionReport } from './transaction-report';
 
 export enum TransactionReportType {
     Incoming = 0,
@@ -18,34 +21,83 @@ export interface ITransactionReport {
 
 @Component()
 export class TransactionConverterService {
+    constructor(private txUtils: TransactionUtilsService) {
+    }
+
     public convertForTxReportsForAddress(chainTxs: Transaction[], txPool: Transaction[], address: string): ITransactionReport[] {
-        const confirmedIncoming: ITransactionReport[] = this.getIncomingTransactions(chainTxs, address, true);
-        const confirmedOutcoming: ITransactionReport[] = this.getOutcomingTransactions(chainTxs, address, true);
+        const confirmedReports: ITransactionReport[] = this.convertTxsToReports(chainTxs, address, true, chainTxs);
 
-        const unconfirmedIncoming: ITransactionReport[] = this.getIncomingTransactions(chainTxs, address, false);
-        const unconfirmedOutcoming: ITransactionReport[] = this.getOutcomingTransactions(chainTxs, address, false);
+        const unconfirmedReports: ITransactionReport[] = this.convertTxsToReports(txPool, address, false, chainTxs);
 
-        let reports: ITransactionReport[] =
-            confirmedIncoming
-                .concat(confirmedOutcoming)
-                .concat(unconfirmedIncoming)
-                .concat(unconfirmedOutcoming);
+        let reports: ITransactionReport[] = confirmedReports.concat(unconfirmedReports);
 
         reports = this.orderReports(reports);
 
         return reports;
-
     }
 
     private orderReports(reports: ITransactionReport[]): ITransactionReport[] {
         return reports.sort((a, b) => a.timeStamp - b.timeStamp);
     }
 
-    private getIncomingTransactions(transactions: Transaction[], address: string, confirmed: boolean): ITransactionReport[] {
-        return [];
+    private convertTxsToReports(transactions: Transaction[], address: string, confirmed: boolean, confirmedTxs: Transaction[]): ITransactionReport[] {
+        const result: TransactionReport[] = [];
+
+        transactions.forEach(tx => {
+            const txOut: TransactionOutput = tx.outputs[1] ? tx.outputs[1] : tx.outputs[0];
+
+            const recipientAddress: string = txOut.address;
+            const senderAddress: string = this.getSenderAddress(recipientAddress, tx, transactions, confirmedTxs);
+
+            if (recipientAddress !== address && senderAddress !== address) {
+                return;
+            }
+
+            const type: TransactionReportType = (recipientAddress === address) ? TransactionReportType.Incoming : TransactionReportType.Outcoming;
+
+            const report = new TransactionReport(
+                tx.id,
+                type,
+                confirmed,
+                tx.timeStamp,
+                senderAddress,
+                recipientAddress,
+                txOut.amount
+            );
+
+            result.push(report);
+        });
+
+        return result;
     }
 
-    private getOutcomingTransactions(transactions: Transaction[], address: string, confirmed: boolean): ITransactionReport[] {
-        return [];
+    private getSenderAddress(recipientAddress: string, tx: Transaction, transactions: Transaction[], confirmedTxs: Transaction[]): string {
+        const senderAddress: string = '';
+
+        if (this.txUtils.isCoinbaseTx(tx)) {
+            return senderAddress;
+        }
+
+        for ( const input of tx.inputs) {
+            const txId: string = input.txOutputId;
+
+            let refTx: Transaction = transactions.find(t => t.id === txId);
+            if (!refTx) {
+                refTx = confirmedTxs.find(t => t.id === txId);
+            }
+
+            if (!refTx) { continue; }
+
+            let guessingAddress: string;
+
+            for (let i = refTx.outputs.length - 1; i >= 0; i--) {
+                guessingAddress = refTx.outputs[i].address;
+                if (guessingAddress !== recipientAddress) {
+                    return guessingAddress;
+                }
+            }
+        }
+
+        return senderAddress;
     }
 }

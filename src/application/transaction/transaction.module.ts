@@ -17,7 +17,8 @@ import { TransactionValidationService } from './services/transaction-validation-
     ],
     exports: [
         TransactionFactory,
-        TransactionValidationService
+        TransactionValidationService,
+        TransactionUtilsService
     ]
 })
 export class TransactionModule {

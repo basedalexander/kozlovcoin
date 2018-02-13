@@ -1,11 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
 import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
-import accounts from '../helpers/test-accounts';
 
 // tslint:disable
 import { Server } from '../../src/server/server';
-import { TransactionSendDetails } from '../helpers/transaction-send-details';
 
 describe('Wallet REST API', async () => {
     let server;
@@ -187,41 +185,6 @@ describe('Wallet REST API', async () => {
                 expect(typeof res.body.data.publicKey).toBe('string');
                 expect(typeof res.body.data.privateKey).toBe('string');
             });
-        });
-    });
-
-    describe('/wallet/transactions/:{{publicKey}}', () => {
-        it('should return proper list of incoming for an address', async () => {
-
-            const send1ToWalletARes = await request(httpServer)
-                .post(`/wallet/transaction`)
-                .set('Accept', 'application/json')
-                .send(new TransactionSendDetails(
-                    accounts.walletA.publicKey,
-                    accounts.genesis.publicKey,
-                    accounts.genesis.privateKey,
-                    1
-                ));
-
-            expect(send1ToWalletARes.status).toBe(200);
-
-            const send2ToWalletARes = await request(httpServer)
-                .post(`/wallet/transaction`)
-                .set('Accept', 'application/json')
-                .send(new TransactionSendDetails(
-                    accounts.walletA.publicKey,
-                    accounts.genesis.publicKey,
-                    accounts.genesis.privateKey,
-                    2
-                ));
-
-            expect(send2ToWalletARes.status).toBe(200);
-
-            const res = await request(httpServer)
-                .get(`/wallet/transactions/${accounts.walletA.publicKey}`)
-                .set('Accept', 'application/json');
-
-            expect(res.status).toBe(200);
         });
     });
 });

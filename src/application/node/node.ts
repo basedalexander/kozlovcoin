@@ -14,30 +14,25 @@ import { BlockFactory } from '../block/block-factory';
 import { MiningHelpersService } from './mining-helpers.service';
 import { SystemConstants } from '../../system/system-constants';
 import { BlockValidatorService } from '../block/block-validator.service';
-import { Scheduler } from './scheduler';
+import { Scheduler } from './scheduler/scheduler';
+import { IScheduler, TScheduler } from './scheduler/scheduler.interface';
 
 @Component()
 export class Node {
     public blockMined: EventEmitter<IBlock> = new EventEmitter();
     public txPoolUpdate: EventEmitter<Transaction[]> = new EventEmitter();
 
-    constructor(
-        private config: Configuration,
-        private constants: SystemConstants,
-
-        private blockchain: Blockchain,
-        private unspentTxOutputs: UnspentTransactionOutputs,
-        private transactionPool: TransactionPool,
-
-        private blockFactory: BlockFactory,
-        private transactionFactory: TransactionFactory,
-        private miningHelper: MiningHelpersService,
-
-        private blockValidator: BlockValidatorService,
-        @Inject(TLogger) private logger: ILogger,
-        private scheduler: Scheduler
-    ) {
-
+    constructor(private config: Configuration,
+                private constants: SystemConstants,
+                private blockchain: Blockchain,
+                private unspentTxOutputs: UnspentTransactionOutputs,
+                private transactionPool: TransactionPool,
+                private blockFactory: BlockFactory,
+                private transactionFactory: TransactionFactory,
+                private miningHelper: MiningHelpersService,
+                private blockValidator: BlockValidatorService,
+                @Inject(TLogger) private logger: ILogger,
+                @Inject(TScheduler) private scheduler: IScheduler) {
     }
 
     async addTransaction(tx: Transaction): Promise<void> {
@@ -127,9 +122,9 @@ export class Node {
     }
 
     public initAutomining(): void {
-        // this.scheduler.subscribe(() => {
-        //    this.actOnSchedule();
-        // });
+        this.scheduler.subscribe(() => {
+            this.actOnSchedule();
+        });
 
         this.scheduler.start();
     }

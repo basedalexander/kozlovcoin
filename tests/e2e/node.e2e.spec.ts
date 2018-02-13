@@ -4,7 +4,7 @@ import * as rimraf from 'rimraf-promise';
 import { Server } from '../../src/server/server';
 import { IBlock } from '../../src/application/block/block.interface';
 
-describe('Node REST API', async () => {
+describe('Node REST API', () => {
     let server;
     let httpServer;
 

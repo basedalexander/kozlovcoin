@@ -1,9 +1,10 @@
 import { Component } from '@nestjs/common';
-import { SystemConstants } from '../../system/system-constants';
-import { EventEmitter } from '../../lib/event-emitter';
+import { SystemConstants } from '../../../system/system-constants';
+import { EventEmitter } from '../../../lib/event-emitter';
+import { IScheduler } from './scheduler.interface';
 
 @Component()
-export class Scheduler extends EventEmitter<void> {
+export class Scheduler extends EventEmitter<void> implements IScheduler {
     private timeoutId: any;
 
     constructor(private constants: SystemConstants) {
@@ -15,16 +16,16 @@ export class Scheduler extends EventEmitter<void> {
     }
 
     public start(): void {
-        // this.makeLoop();
+         this.makeLoop();
     }
 
     public reset(): void {
-        //this.stop();
-        //this.start();
+        this.stop();
+        this.start();
     }
 
     public stop(): void {
-        //clearTimeout(this.timeoutId);
+        clearTimeout(this.timeoutId);
     }
 
     public kill(): void {

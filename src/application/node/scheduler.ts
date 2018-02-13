@@ -4,28 +4,39 @@ import { EventEmitter } from '../../lib/event-emitter';
 
 @Component()
 export class Scheduler extends EventEmitter<void> {
-    private intervalId: any;
+    private timeoutId: any;
 
     constructor(private constants: SystemConstants) {
         super();
     }
 
+    private get interval(): number {
+        return this.constants.BLOCK_GENERATION_INTERVAL;
+    }
+
     public start(): void {
-        this.intervalId = setInterval(() => this.tick() , this.constants.BLOCK_GENERATION_INTERVAL * 1000);
+        // this.makeLoop();
     }
 
     public reset(): void {
-        this.stop();
-        this.start();
+        //this.stop();
+        //this.start();
     }
 
     public stop(): void {
-        clearInterval(this.intervalId);
+        //clearTimeout(this.timeoutId);
     }
 
     public kill(): void {
         this.stop();
         this.unsubscribeAll();
+    }
+
+    private makeLoop(): void {
+        this.timeoutId = setTimeout( () => {
+            this.tick();
+            this.makeLoop();
+        }, this.interval);
     }
 
     private tick(): void {

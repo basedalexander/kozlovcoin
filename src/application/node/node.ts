@@ -122,10 +122,14 @@ export class Node {
         this.initAutomining();
     }
 
+    async destroy(): Promise<void> {
+        this.stopAutomining();
+    }
+
     public initAutomining(): void {
-        this.scheduler.subscribe(() => {
-            this.actOnSchedule();
-        });
+        // this.scheduler.subscribe(() => {
+        //    this.actOnSchedule();
+        // });
 
         this.scheduler.start();
     }
@@ -135,7 +139,7 @@ export class Node {
     }
 
     public stopAutomining(): void {
-        this.scheduler.stop();
+        this.scheduler.kill();
     }
 
     public async getBlocks(): Promise<IBlock[]> {
@@ -150,7 +154,7 @@ export class Node {
         const txPool: Transaction[] = await this.getTxPool();
 
         if (txPool.length) {
-            this.mineNewBlock();
+            await this.mineNewBlock();
         }
     }
 }

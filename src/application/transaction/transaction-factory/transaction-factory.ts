@@ -26,7 +26,7 @@ export class TransactionFactory {
         const genesisInputTransaction = new TransactionInput('', blockIndex, '');
         const genesisOutputTransaction = new TransactionOutput(publicAddress, this.constants.COINBASE_AMOUNT);
 
-        const tx = new Transaction('', 0, [genesisInputTransaction], [genesisOutputTransaction]);
+        const tx = new Transaction('', 1, [genesisInputTransaction], [genesisOutputTransaction]);
 
         tx.id = this.utils.calcTransactionId(tx);
 

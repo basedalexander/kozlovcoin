@@ -53,7 +53,7 @@ describe('Wallet REST API', async () => {
 
             const recipientPublicKey: string = "0472d73e4d7d8770710ae2c2d1e6f4d837b4b94582ab723dbb725afdfd9ed630e9e6c51a4f89c7d12ce24ad385e192bdb5e1cc8f059da23536a685020fc18e5ea8";
 
-            describe('Valid request', async () => {
+            describe('Valid request',  () => {
                 it('Should add new transaction to the node and return it', async () => {
                     const res = await request(httpServer)
                         .post('/wallet/transaction')
@@ -76,7 +76,7 @@ describe('Wallet REST API', async () => {
                 });
             });
 
-            describe('Errors', async () => {
+            describe('Errors',  () => {
                 it(`case #1 should return status 500 and error message if either of sender keys is wrong`, async () => {
                     const res = await request(httpServer)
                         .post('/wallet/transaction')

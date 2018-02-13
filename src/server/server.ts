@@ -60,7 +60,7 @@ export class Server implements IServer {
 
     public async stop(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
-
+            await this.node.destroy();
             await this.p2p.close();
 
             const httpServer = this.nestApp.getHttpServer();

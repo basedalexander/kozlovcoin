@@ -6,7 +6,7 @@ import accounts from '../helpers/test-accounts';
 import { Server } from '../../src/server/server';
 import { TransactionSendDetails } from '../helpers/transaction-send-details';
 
-describe('Wallet REST API', async () => {
+describe('Wallet REST API', () => {
     let server;
     let httpServer;
 
@@ -15,8 +15,8 @@ describe('Wallet REST API', async () => {
 
         await server.init();
 
-        server.config.server.port = 3002;
-        server.config.p2p.port = 6002;
+        server.config.server.port = 3005;
+        server.config.p2p.port = 6005;
 
         await rimraf(server.config.storagePath);
 
@@ -106,6 +106,6 @@ describe('Wallet REST API', async () => {
                 .set('Accept', 'application/json');
             expect(getWalletBTxsResult2.status).toBe(200);
             expect(getWalletBTxsResult2.body.data.length).toBe(2);
-        }, 7000);
+        }, 9000);
     });
 });

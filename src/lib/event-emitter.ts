@@ -13,6 +13,10 @@ export class EventEmitter<T> {
         }
     }
 
+    public unsubscribeAll(): void {
+        this.listeners = [];
+    }
+
     public emit(data: T): void {
         this.listeners.forEach(listener => listener(data));
     }

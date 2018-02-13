@@ -37,7 +37,9 @@ export class TransactionConverterService {
     }
 
     private orderReports(reports: ITransactionReport[]): ITransactionReport[] {
-        return reports.sort((a, b) => a.timeStamp - b.timeStamp);
+        return reports.sort((a, b) => {
+            return (b.timeStamp - a.timeStamp);
+        });
     }
 
     private convertTxsToReports(transactions: Transaction[], address: string, confirmed: boolean, confirmedTxs: Transaction[]): ITransactionReport[] {

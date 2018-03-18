@@ -1,6 +1,8 @@
-Blockchain Node with Wallet API implementation in Javascript
+Blockchain Node REST API
 
-[Kozlovcoin Wallet](https://github.com/thohoh/kozlovcoin-wallet) is browser client for this cryptocurrency.
+### Available on [https://kozlovcoin.thohoh.pro](https://kozlovcoin.thohoh.pro)
+
+### wallet source code: [https://github.com/thohoh/kozlovcoin-wallet](https://github.com/thohoh/kozlovcoin-wallet)
 
 [![Build Status](https://travis-ci.org/thohoh/kozlovcoin.svg?branch=master)](https://travis-ci.org/thohoh/kozlovcoin)
 

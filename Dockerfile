@@ -20,5 +20,7 @@ RUN cd /kozlovcoin && npm install
 EXPOSE 3008
 EXPOSE 6001
 
+LABEL api_route="node/wallet"
+
 WORKDIR /kozlovcoin
 CMD npm start

@@ -1,12 +1,11 @@
 import { INestApplication } from '@nestjs/common';
-
+import { NestFactory } from '@nestjs/core';
 import * as express from 'express';
+import { Express } from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 
 import { IServer } from './server.interface';
-import { Express } from 'express';
-import { NestFactoryStatic } from '@nestjs/core';
 import { ApplicationModule } from '../application/application.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Configuration } from '../system/configuration';
@@ -33,9 +32,7 @@ export class Server implements IServer {
         this.app = express();
         this.setupMiddleware(this.app);
 
-        const appFactory = new NestFactoryStatic();
-
-        this.nestApp = await appFactory.create(ApplicationModule, this.app);
+        this.nestApp = await NestFactory.create(ApplicationModule, this.app, {});
         this.nestApp.useGlobalPipes(new ValidationPipe());
         this.nestApp.useGlobalFilters(new HttpExceptionFilter());
 

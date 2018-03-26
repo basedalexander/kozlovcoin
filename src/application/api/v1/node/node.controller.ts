@@ -8,12 +8,13 @@ import { GetUnspentTxOutputsResponseDto } from './dto/get-unspent-tx-outputs-res
 import { UnspentTransactionOutput } from '../../../transaction/classes/unspent-transaction-output';
 import { Transaction } from '../../../transaction/classes/transaction';
 import { GetTransactionPoolResponseDto } from './dto/get-transaction-pool-response.dto';
-import { ErrorResponseDTO } from './error-response.dto';
+import { ErrorResponseDTO } from '../dto/error-response.dto';
 import { AddPeerDTO } from './dto/add-peer-dto';
 import { GetPeersResponseDto } from './dto/get-peers-response.dto';
 import { GetMinerAddressResponseDto } from './dto/get-miner-address-response.dto';
-import { GetKeyPairResponseDTO } from '../wallet-controller/dto/get-new-key-pair.response.dto';
+import { GetKeyPairResponseDTO } from '../wallet/dto/get-new-key-pair.response.dto';
 import { KeyPair } from '../../../crypto/key-pair';
+import { API_VERSION } from '../constants';
 
 @ApiUseTags('Node API')
 @ApiResponse({
@@ -31,7 +32,7 @@ import { KeyPair } from '../../../crypto/key-pair';
     description: `Internal server error.`,
     type: ErrorResponseDTO
 })
-@Controller()
+@Controller(API_VERSION)
 export class NodeController {
     constructor(private nodeManager: NodeManager) {}
 

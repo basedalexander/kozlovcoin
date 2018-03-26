@@ -1,17 +1,10 @@
 import { Module } from '@nestjs/common';
-import { NodeController } from './controllers/node-controller/node.controller';
-import { NodeModule } from '../node/node.module';
-import { WalletController } from './controllers/wallet-controller/wallet.controller';
-import { WalletModule } from '../wallet/wallet.module';
+
+import { ApiV1Module } from './v1/api.module';
 
 @Module({
     imports: [
-        NodeModule,
-        WalletModule
-    ],
-    controllers: [
-        NodeController,
-        WalletController
+        ApiV1Module
     ]
 })
 export class ApiModule {

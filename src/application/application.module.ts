@@ -2,8 +2,8 @@ import { MiddlewaresConsumer, Module, NestModule, RequestMethod } from '@nestjs/
 import { LoggerMiddleware } from '../system/logger/lib/logger.middleware';
 import { SystemModule } from '../system/system.module';
 import { NodeModule } from './node/node.module';
-import { ApiModule } from './api/api.module';
 import { WalletModule } from './wallet/wallet.module';
+import { ApiModule } from './api/api.module';
 
 @Module({
     imports: [

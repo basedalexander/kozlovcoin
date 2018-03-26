@@ -1,6 +1,6 @@
-import { IServer } from '../../../src/server/server.interface';
-import { Server } from '../../../src/server/server';
-import accounts from '../../helpers/test-accounts';
+import { IServer } from '../../../../../src/server/server.interface';
+import { Server } from '../../../../../src/server/server';
+import accounts from '../../../../helpers/test-accounts';
 
 export const createWsAddressFromConfig = (config): string => {
     return `ws://${config.p2p.host}:${config.p2p.port}`;

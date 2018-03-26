@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { NodeController } from '../api/controllers/node-controller/node.controller';
 import { BlockchainModule } from '../blockchain/blockchain.module';
 import { TransactionPoolModule } from '../transaction-pool/transaction-pool.module';
 import { BlockModule } from '../block/block.module';
@@ -31,9 +30,6 @@ import { DumbScheduler } from './scheduler/dumb-scheduler';
         schedulerProvider,
         MiningHelpersService,
         ...P2P_PROVIDERS
-    ],
-    controllers: [
-        NodeController
     ],
     exports: [
         NodeManager,

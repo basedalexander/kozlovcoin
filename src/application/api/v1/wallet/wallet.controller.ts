@@ -10,9 +10,10 @@ import { GetKeyPairResponseDTO } from './dto/get-new-key-pair.response.dto';
 import { MakeTransactionResponseDto } from './dto/create-transaction-response.dto';
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';
 import { GetHistoryResponseDTO } from './dto/get-history-response.dto';
-import { ErrorResponseDTO } from '../node-controller/error-response.dto';
-import { HttpExceptionFilter } from '../../exceptions/http-exception-handler';
+import { ErrorResponseDTO } from '../dto/error-response.dto';
+import { HttpExceptionFilter } from '../exceptions/http-exception-handler';
 import { KeyPair } from '../../../crypto/key-pair';
+import { API_VERSION } from '../constants';
 
 @ApiUseTags('Kozlovcoin Wallet API')
 @ApiResponse({
@@ -26,7 +27,7 @@ import { KeyPair } from '../../../crypto/key-pair';
     type: ErrorResponseDTO
 })
 @UseFilters(new HttpExceptionFilter())
-@Controller('/wallet')
+@Controller(`${API_VERSION}/wallet`)
 export class WalletController {
     constructor(private manager: WalletManager) {}
 

@@ -1,6 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger';
+import { IApiResponseDto } from '../../interfaces';
 
-export class GetPeersResponseDto {
+export class GetPeersResponseDto implements IApiResponseDto {
     @ApiModelProperty({
         type: String,
         isArray: true,

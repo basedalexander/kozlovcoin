@@ -1,10 +1,10 @@
 import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
 
-import { Server } from '../../src/server/server';
-import { IBlock } from '../../src/application/block/block.interface';
+import { Server } from '../../../../src/server/server';
+import { IBlock } from '../../../../src/application/block/block.interface';
 
-describe('Node REST API', () => {
+describe('Node API v1', () => {
     let server;
     let httpServer;
 
@@ -20,18 +20,18 @@ describe('Node REST API', () => {
 
         await server.start();
 
-        httpServer = server.getHttpServerInstance();
+        httpServer = server.getHttpServer();
     });
 
     afterAll(async () => {
         await server.stop();
     });
 
-    describe('/blocks', () => {
+    describe('/api/v1/blocks', () => {
         describe('GET', () => {
             it('Should return array', async () => {
                 const res = await request(httpServer)
-                    .get('/blocks')
+                    .get('/api/v1/blocks')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();
@@ -40,7 +40,7 @@ describe('Node REST API', () => {
 
             it('Should return array with one item', async () => {
                 const res = await request(httpServer)
-                    .get('/blocks')
+                    .get('/api/v1/blocks')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data.length).toBe(1);
@@ -49,11 +49,11 @@ describe('Node REST API', () => {
         });
     });
 
-    describe('/last-block', () => {
+    describe('/api/v1/last-block', () => {
         describe('GET', () => {
             it('Should return the only block in the chain', async () => {
                 const res = await request(httpServer)
-                    .get('/last-block')
+                    .get('/api/v1/last-block')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();
@@ -64,11 +64,11 @@ describe('Node REST API', () => {
         });
     });
 
-    describe('/unspent-tx-outputs', () => {
+    describe('/api/v1/unspent-tx-outputs', () => {
         describe('GET', () => {
             it('Should return list of unspent transaction outputs', async () => {
                 const res = await request(httpServer)
-                    .get('/unspent-tx-outputs')
+                    .get('/api/v1/unspent-tx-outputs')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();
@@ -77,11 +77,11 @@ describe('Node REST API', () => {
         });
     });
 
-    describe('/tx-pool', () => {
+    describe('/api/v1/tx-pool', () => {
         describe('GET', () => {
             it('Should return list of uncofirmed transactions from Transaction pool', async () => {
                 const res = await request(httpServer)
-                    .get('/tx-pool')
+                    .get('/api/v1/tx-pool')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();
@@ -90,13 +90,13 @@ describe('Node REST API', () => {
         });
     });
 
-    describe('/new-block', () => {
+    describe('/api/v1/new-block', () => {
         describe('POST', async () => {
             let newBlock: IBlock;
 
             it('Should mine a new block with existing in tx pool transactions and return it', async () => {
                 const res = await request(httpServer)
-                    .post('/new-block')
+                    .post('/api/v1/new-block')
                     .set('Accept', 'application/json');
 
                 expect(res.status).toBe(200);
@@ -108,7 +108,7 @@ describe('Node REST API', () => {
 
             it(`Should also properly update blockchain`, async () => {
                 const res = await request(httpServer)
-                    .get('/last-block')
+                    .get('/api/v1/last-block')
                     .set('Accept', 'application/json');
 
                 expect(res.status).toBe(200);
@@ -118,7 +118,7 @@ describe('Node REST API', () => {
 
             it(`Should also properly update unspent-tx-outputs`, async () => {
                 const res = await request(httpServer)
-                    .get('/unspent-tx-outputs')
+                    .get('/api/v1/unspent-tx-outputs')
                     .set('Accept', 'application/json');
 
                 expect(res.status).toBe(200);

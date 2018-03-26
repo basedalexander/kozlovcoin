@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import * as rimraf from 'rimraf-promise';
 
 // tslint:disable
-import { Server } from '../../src/server/server';
+import { Server } from '../../../../src/server/server';
 
 describe('Wallet REST API', async () => {
     let server;
@@ -21,18 +21,18 @@ describe('Wallet REST API', async () => {
 
         await server.start();
 
-        httpServer = server.getHttpServerInstance();
+        httpServer = server.getHttpServer();
     });
 
     afterAll(async () => {
        await server.stop();
     });
 
-    describe('/wallet/balance/{publicKey}', () => {
+    describe('/api/v1/wallet/balance/{publicKey}', () => {
         describe('GET', () => {
             it('should return number of coins owned by given address', async () => {
                 const res = await request(httpServer)
-                    .get(`/wallet/balance/${server.config.genesisPublicKey}`)
+                    .get(`/api/v1/wallet/balance/${server.config.genesisPublicKey}`)
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBe(50);
@@ -40,7 +40,7 @@ describe('Wallet REST API', async () => {
 
             it('should return zero number of coins if theres nothing owned by given address', async () => {
                 const res = await request(httpServer)
-                    .get('/wallet/balance/123')
+                    .get('/api/v1/wallet/balance/123')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBe(0);
@@ -48,7 +48,7 @@ describe('Wallet REST API', async () => {
         });
     });
 
-    describe('/wallet/transaction', () => {
+    describe('/api/v1/wallet/transaction', () => {
         describe('POST', () => {
 
             const recipientPublicKey: string = "0472d73e4d7d8770710ae2c2d1e6f4d837b4b94582ab723dbb725afdfd9ed630e9e6c51a4f89c7d12ce24ad385e192bdb5e1cc8f059da23536a685020fc18e5ea8";
@@ -56,7 +56,7 @@ describe('Wallet REST API', async () => {
             describe('Valid request',  () => {
                 it('Should add new transaction to the node and return it', async () => {
                     const res = await request(httpServer)
-                        .post('/wallet/transaction')
+                        .post('/api/v1/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
                             recipientPublicKey: recipientPublicKey,
@@ -79,7 +79,7 @@ describe('Wallet REST API', async () => {
             describe('Errors',  () => {
                 it(`case #1 should return status 500 and error message if either of sender keys is wrong`, async () => {
                     const res = await request(httpServer)
-                        .post('/wallet/transaction')
+                        .post('/api/v1/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
                             recipientPublicKey: recipientPublicKey,
@@ -95,7 +95,7 @@ describe('Wallet REST API', async () => {
 
                 it(`case #2 should return status 500 and error message if either of sender keys is wrong`, async () => {
                     const res = await request(httpServer)
-                        .post('/wallet/transaction')
+                        .post('/api/v1/wallet/transaction')
                         .set('Accept', 'application/json')
                         .send({
                             recipientPublicKey: recipientPublicKey,
@@ -112,7 +112,7 @@ describe('Wallet REST API', async () => {
                 describe('body validation', async () => {
                     it(`case #1 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
                         const res = await request(httpServer)
-                            .post('/wallet/transaction')
+                            .post('/api/v1/wallet/transaction')
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: 123,
@@ -127,7 +127,7 @@ describe('Wallet REST API', async () => {
 
                     it(`case #2 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
                         const res = await request(httpServer)
-                            .post('/wallet/transaction')
+                            .post('/api/v1/wallet/transaction')
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: '123',
@@ -142,7 +142,7 @@ describe('Wallet REST API', async () => {
 
                     it(`case #3 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
                         const res = await request(httpServer)
-                            .post('/wallet/transaction')
+                            .post('/api/v1/wallet/transaction')
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: '123',
@@ -157,7 +157,7 @@ describe('Wallet REST API', async () => {
 
                     it(`case #4 should return status ${HttpStatus.BAD_REQUEST} if one of the fields has invalid type`, async () => {
                         const res = await request(httpServer)
-                            .post('/wallet/transaction')
+                            .post('/api/v1/wallet/transaction')
                             .set('Accept', 'application/json')
                             .send({
                                 recipientPublicKey: '123',
@@ -174,11 +174,11 @@ describe('Wallet REST API', async () => {
         });
     });
 
-    describe('/wallet/new-key-pair', () => {
+    describe('/api/v1/wallet/new-key-pair', () => {
         describe('GET', () => {
             it('Should return new pair of keys, private and public', async () => {
                 const res = await request(httpServer)
-                    .get(`/wallet/new-key-pair`)
+                    .get('/api/v1/wallet/new-key-pair')
                     .set('Accept', 'application/json');
 
                 expect(res.body.data).toBeTruthy();

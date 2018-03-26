@@ -8,6 +8,5 @@ module.exports = {
         "js",
         "json"
     ],
-    "mapCoverage": true,
     "testEnvironment": "node"
 };

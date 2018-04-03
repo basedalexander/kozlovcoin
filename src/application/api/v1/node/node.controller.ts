@@ -14,7 +14,6 @@ import { GetPeersResponseDto } from './dto/get-peers-response.dto';
 import { GetMinerAddressResponseDto } from './dto/get-miner-address-response.dto';
 import { GetKeyPairResponseDTO } from '../wallet/dto/get-new-key-pair.response.dto';
 import { KeyPair } from '../../../crypto/key-pair';
-import { API_VERSION } from '../constants';
 
 @ApiUseTags('Node API')
 @ApiResponse({
@@ -32,7 +31,7 @@ import { API_VERSION } from '../constants';
     description: `Internal server error.`,
     type: ErrorResponseDTO
 })
-@Controller(API_VERSION)
+@Controller()
 export class NodeController {
     constructor(private nodeManager: NodeManager) {}
 

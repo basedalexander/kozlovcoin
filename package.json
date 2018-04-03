@@ -6,17 +6,13 @@
   "scripts": {
     "prestart": "npm run -s build",
     "start": "node dist/index.js",
-
     "dev": "ts-node './src/index.ts'",
     "dev:watch": "nodemon",
-
     "clean": "rimraf dist",
     "build": "npm run clean && mkdir -p dist && tsc -p .",
     "lint": "tslint -c tslint.json 'src/**/*.ts' 'tests/**/*.ts'",
-
     "compose": "docker-compose down && docker-compose build --no-cache && docker-compose up",
     "compose-up": "docker-compose up",
-
     "unit": "jest --config=jest.unit.config.js",
     "unit-watch": "jest --config=jest.unit.config.js --watch",
     "e2e": "ENV_MODE=test PORT=4000 jest --config=jest.e2e.config.js",
@@ -28,7 +24,7 @@
     "@nestjs/common": "^4.6.6",
     "@nestjs/core": "^4.6.6",
     "@nestjs/microservices": "^4.6.6",
-    "@nestjs/swagger": "^1.1.4",
+    "@nestjs/swagger": "^1.2.2",
     "@nestjs/testing": "^4.6.6",
     "@nestjs/websockets": "^4.6.6",
     "body-parser": "1.18.2",

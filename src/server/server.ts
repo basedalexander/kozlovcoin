@@ -5,6 +5,7 @@ import * as express from 'express';
 import { Express } from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
+import * as path from 'path';
 
 import { IServer } from './server.interface';
 import { ApplicationModule } from '../application/application.module';
@@ -33,7 +34,7 @@ export class Server implements IServer {
         this.setupMiddleware(this.expressApp);
 
         this.nestApp = await NestFactory.create(ApplicationModule, this.expressApp, {});
-        this.nestApp.setGlobalPrefix('api');
+        this.nestApp.setGlobalPrefix('api/v1');
 
         this.nestApp.useGlobalPipes(new ValidationPipe());
         this.nestApp.useGlobalFilters(new HttpExceptionFilter());
@@ -94,12 +95,14 @@ export class Server implements IServer {
 
     private setupApiDocs(nestApp: INestApplication): void {
         const options = new DocumentBuilder()
-            .setTitle('Kozlovcoin blockchain API Docs')
-            .setDescription('')
-            .setVersion('1.0')
+            .setTitle('Kozlovcoin API Documentation')
+            .setVersion('1')
+            .setBasePath('/api/v1/')
             .build();
 
+        const docsEndpoint: string = path.join('/api/v1/', this.config.server.apiDocsRoute);
+
         const document = SwaggerModule.createDocument(nestApp, options);
-        SwaggerModule.setup(this.config.server.apiDocsRoute, nestApp, document);
+        SwaggerModule.setup(docsEndpoint, nestApp, document);
     }
 }

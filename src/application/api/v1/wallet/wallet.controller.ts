@@ -1,6 +1,4 @@
-import {
-    Body, Controller, Get, HttpStatus, Param, Post, Res, UseFilters
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Res, UseFilters } from '@nestjs/common';
 import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
 
 import { WalletManager } from '../../../wallet/wallet.manager';
@@ -11,9 +9,7 @@ import { MakeTransactionResponseDto } from './dto/create-transaction-response.dt
 import { GetBalanceResponseDTO } from './dto/get-balance-response.dto';
 import { GetHistoryResponseDTO } from './dto/get-history-response.dto';
 import { ErrorResponseDTO } from '../dto/error-response.dto';
-import { HttpExceptionFilter } from '../exceptions/http-exception-handler';
 import { KeyPair } from '../../../crypto/key-pair';
-import { API_VERSION } from '../constants';
 
 @ApiUseTags('Kozlovcoin Wallet API')
 @ApiResponse({
@@ -26,8 +22,7 @@ import { API_VERSION } from '../constants';
     description: `Internal server error.`,
     type: ErrorResponseDTO
 })
-@UseFilters(new HttpExceptionFilter())
-@Controller(`${API_VERSION}/wallet`)
+@Controller(`wallet`)
 export class WalletController {
     constructor(private manager: WalletManager) {}
 
